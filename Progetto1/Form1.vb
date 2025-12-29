@@ -126,7 +126,7 @@ Public Class Form1
                 conn.Open()
                 ' MODIFICATO: Aggiunto LEFT JOIN con zone per la ricerca, ma selezioniamo solo le colonne originali
                 Dim sql As String = "SELECT a.id, a.ANA_Cognome, a.ANA_Nome, a.ANA_data_nascita, a.ANA_Sesso, a.ANA_Qualifica, " &
-                               "a.ANA_indirizzo, a.ANA_civico, a.ANA_localita, a.ANA_Prov, a.ANA_Cap, a.ANA_Cellulare, " &
+                               "a.ANA_indirizzo, a.ANA_civico, a.ANA_localita, a.ANA_Prov, a.ANA_Cap, a.ANA_Data_Iscrizione, a.ANA_Cellulare, " &
                                "a.ANA_Codice_Fiscale, a.ANA_Zona, a.ANA_Scad_tessera, a.ANA_Socio, a.ANA_Milite, " &
                                "a.ANA_Annullato, a.ANA_Assicurato " &
                                "FROM anagrafico a " &
@@ -211,13 +211,11 @@ Public Class Form1
             If dgvAnagrafico.Columns.Contains("ANA_localita") Then dgvAnagrafico.Columns("ANA_localita").HeaderText = "Località"
             If dgvAnagrafico.Columns.Contains("ANA_Prov") Then dgvAnagrafico.Columns("ANA_Prov").HeaderText = "Prov."
             If dgvAnagrafico.Columns.Contains("ANA_Cap") Then dgvAnagrafico.Columns("ANA_Cap").HeaderText = "CAP"
-            If dgvAnagrafico.Columns.Contains("ANA_Cellulare") Then dgvAnagrafico.Columns("ANA_Cellulare").HeaderText = "Cellulare"
-            If dgvAnagrafico.Columns.Contains("ANA_Codice_Fiscale") Then dgvAnagrafico.Columns("ANA_Codice_Fiscale").HeaderText = "Codice Fiscale"
-            If dgvAnagrafico.Columns.Contains("ANA_Zona") Then dgvAnagrafico.Columns("ANA_Zona").HeaderText = "Zona"
-            If dgvAnagrafico.Columns.Contains("ANA_Scad_tessera") Then
-                dgvAnagrafico.Columns("ANA_Scad_tessera").HeaderText = "Scadenza tessera"
-                dgvAnagrafico.Columns("ANA_Scad_tessera").DefaultCellStyle.Format = "dd/MM/yyyy"
+            If dgvAnagrafico.Columns.Contains("ANA_Data_Iscrizione") Then
+                dgvAnagrafico.Columns("ANA_Data_Iscrizione").HeaderText = "Data Iscrizione"
+                dgvAnagrafico.Columns("ANA_Data_Iscrizione").DefaultCellStyle.Format = "dd/MM/yyyy"
             End If
+            If dgvAnagrafico.Columns.Contains("ANA_Cellulare") Then dgvAnagrafico.Columns("ANA_Cellulare").HeaderText = "Cellulare"
 
             Dim tinyCols As New Dictionary(Of String, String) From {
                 {"ANA_Socio", "Socio"},
@@ -462,7 +460,9 @@ Public Class Form1
         Try
             Using conn As New MySqlConnection(ConnectionString)
                 conn.Open()
-                Dim sql As String = "INSERT INTO anagrafico (ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, ANA_Cap, ANA_Cellulare, ANA_Codice_Fiscale, ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato, ANA_Assicurato) VALUES (@Cognome, @Nome, @DataNascita, @Sesso, @Qualifica, @Indirizzo, @Civico, @Localita, @Prov, @Cap, @Cellulare, @CF, @Zona, @ScadTessera, @Socio, @Milite, @Annullato, @Assicurato)"
+                ' Leggi la data di scadenza dalla tabella tes_scad
+                Dim dataScadenzaTessera As DateTime = GetDataScadenzaRiferimento()
+                Dim sql As String = "INSERT INTO anagrafico (ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, ANA_Cap, ANA_Data_Iscrizione, ANA_Cellulare, ANA_Codice_Fiscale, ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato, ANA_Assicurato) VALUES (@Cognome, @Nome, @DataNascita, @Sesso, @Qualifica, @Indirizzo, @Civico, @Localita, @Prov, @Cap, @DataIscrizione, @Cellulare, @CF, @Zona, @ScadTessera, @Socio, @Milite, @Annullato, @Assicurato)"
                 Using cmd As New MySqlCommand(sql, conn)
                     cmd.Parameters.AddWithValue("@Cognome", txtCognome.Text.Trim())
                     cmd.Parameters.AddWithValue("@Nome", txtNome.Text.Trim())
@@ -474,6 +474,7 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Localita", If(String.IsNullOrWhiteSpace(txtLocalita.Text), DBNull.Value, txtLocalita.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Prov", If(String.IsNullOrWhiteSpace(txtProv.Text), DBNull.Value, txtProv.Text.Trim().ToUpper()))
                     cmd.Parameters.AddWithValue("@Cap", If(String.IsNullOrWhiteSpace(txtCap.Text), DBNull.Value, txtCap.Text.Trim()))
+                    cmd.Parameters.AddWithValue("@DataIscrizione", If(dtpDataIscrizione.Checked, CType(dtpDataIscrizione.Value.Date, Object), DBNull.Value))
                     cmd.Parameters.AddWithValue("@Cellulare", If(String.IsNullOrWhiteSpace(txtCellulare.Text), DBNull.Value, txtCellulare.Text.Trim()))
                     cmd.Parameters.AddWithValue("@CF", If(String.IsNullOrWhiteSpace(txtCF.Text), DBNull.Value, txtCF.Text.Trim().ToUpper()))
                     cmd.Parameters.AddWithValue("@Zona", If(cmbZona.SelectedValue Is Nothing, DBNull.Value, cmbZona.SelectedValue))
@@ -486,6 +487,9 @@ Public Class Form1
                     MessageBox.Show("Record aggiunto con successo.", "Successo", MessageBoxButtons.OK, MessageBoxIcon.Information)
                     LoadData()
                     ClearFields()
+                    ' Imposta la data di iscrizione a oggi per il prossimo inserimento
+                    dtpDataIscrizione.Value = DateTime.Today
+                    dtpDataIscrizione.Checked = True
                 End Using
             End Using
         Catch ex As Exception
@@ -504,19 +508,20 @@ Public Class Form1
         Try
             Using conn As New MySqlConnection(ConnectionString)
                 conn.Open()
-                Dim sql As String = "UPDATE anagrafico SET ANA_Cognome=@Cognome, ANA_Nome=@Nome, ANA_data_nascita=@DataNascita, ANA_Sesso=@Sesso, ANA_Qualifica=@Qualifica, ANA_indirizzo=@Indirizzo, ANA_civico=@Civico, ANA_localita=@Localita, ANA_Prov=@Prov, ANA_Cap=@Cap, ANA_Cellulare=@Cellulare, ANA_Codice_Fiscale=@CF, ANA_Zona=@Zona, ANA_Scad_tessera=@ScadTessera, ANA_Socio=@Socio, ANA_Milite=@Milite, ANA_Annullato=@Annullato, ANA_Assicurato=@Assicurato WHERE id=@Id"
+                Dim sql As String = "UPDATE anagrafico SET ANA_Cognome=@Cognome, ANA_Nome=@Nome, ANA_data_nascita=@DataNascita, ANA_Sesso=@Sesso, ANA_Qualifica=@Qualifica, ANA_indirizzo=@Indirizzo, ANA_civico=@Civico, ANA_localita=@Localita, ANA_Prov=@Prov, ANA_Cap=@Cap, ANA_Data_Iscrizione=@DataIscrizione, ANA_Cellulare=@Cellulare, ANA_Codice_Fiscale=@CF, ANA_Zona=@Zona, ANA_Scad_tessera=@ScadTessera, ANA_Socio=@Socio, ANA_Milite=@Milite, ANA_Annullato=@Annullato, ANA_Assicurato=@Assicurato WHERE id=@Id"
                 Using cmd As New MySqlCommand(sql, conn)
                     cmd.Parameters.AddWithValue("@Id", Integer.Parse(txtId.Text))
                     cmd.Parameters.AddWithValue("@Cognome", txtCognome.Text.Trim())
                     cmd.Parameters.AddWithValue("@Nome", txtNome.Text.Trim())
                     cmd.Parameters.AddWithValue("@DataNascita", If(dtpDataNascita.Checked, CType(dtpDataNascita.Value, Object), DBNull.Value))
                     cmd.Parameters.AddWithValue("@Sesso", If(cmbSesso.SelectedIndex = -1, DBNull.Value, cmbSesso.SelectedItem.ToString()))
-                    cmd.Parameters.AddWithValue("@Qualifica", If(cmbQualifica.SelectedValue Is Nothing, DBNull.Value, cmbQualifica.SelectedValue))  ' CORRETTO: era txtQualifica.Text
+                    cmd.Parameters.AddWithValue("@Qualifica", If(cmbQualifica.SelectedValue Is Nothing, DBNull.Value, cmbQualifica.SelectedValue))
                     cmd.Parameters.AddWithValue("@Indirizzo", If(String.IsNullOrWhiteSpace(txtIndirizzo.Text), DBNull.Value, txtIndirizzo.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Civico", If(String.IsNullOrWhiteSpace(txtCivico.Text), DBNull.Value, txtCivico.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Localita", If(String.IsNullOrWhiteSpace(txtLocalita.Text), DBNull.Value, txtLocalita.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Prov", If(String.IsNullOrWhiteSpace(txtProv.Text), DBNull.Value, txtProv.Text.Trim().ToUpper()))
                     cmd.Parameters.AddWithValue("@Cap", If(String.IsNullOrWhiteSpace(txtCap.Text), DBNull.Value, txtCap.Text.Trim()))
+                    cmd.Parameters.AddWithValue("@DataIscrizione", If(dtpDataIscrizione.Checked, CType(dtpDataIscrizione.Value.Date, Object), DBNull.Value))
                     cmd.Parameters.AddWithValue("@Cellulare", If(String.IsNullOrWhiteSpace(txtCellulare.Text), DBNull.Value, txtCellulare.Text.Trim()))
                     cmd.Parameters.AddWithValue("@CF", If(String.IsNullOrWhiteSpace(txtCF.Text), DBNull.Value, txtCF.Text.Trim().ToUpper()))
                     cmd.Parameters.AddWithValue("@Zona", If(cmbZona.SelectedValue Is Nothing, DBNull.Value, cmbZona.SelectedValue))
@@ -588,10 +593,12 @@ Public Class Form1
         txtLocalita.Clear()
         txtProv.Clear()
         txtCap.Clear()
+        dtpDataIscrizione.Checked = False
+        dtpDataIscrizione.Value = DateTime.Today
         txtCellulare.Clear()
         txtCF.Clear()
         cmbZona.SelectedIndex = -1
-        dtpScadTessera.Value = DateTime.Today
+        dtpScadTessera.Value = GetDataScadenzaRiferimento()
         chkSocio.Checked = False
         chkMilite.Checked = False
         chkAnnullato.Checked = False
@@ -642,6 +649,15 @@ Public Class Form1
             txtLocalita.Text = Convert.ToString(row.Cells("ANA_localita").Value)
             txtProv.Text = Convert.ToString(row.Cells("ANA_Prov").Value)
             txtCap.Text = Convert.ToString(row.Cells("ANA_Cap").Value)
+
+                Dim dataIscrizione = row.Cells("ANA_Data_Iscrizione").Value
+                If dataIscrizione IsNot Nothing AndAlso Not IsDBNull(dataIscrizione) Then
+                dtpDataIscrizione.Value = Convert.ToDateTime(dataIscrizione)
+                dtpDataIscrizione.Checked = True
+            Else
+                dtpDataIscrizione.Checked = False
+            End If
+
             txtCellulare.Text = Convert.ToString(row.Cells("ANA_Cellulare").Value)
             txtCF.Text = Convert.ToString(row.Cells("ANA_Codice_Fiscale").Value)
 
@@ -734,6 +750,7 @@ Public Class Form1
         dt.Columns.Add("ANA_localita", GetType(String))
         dt.Columns.Add("ANA_Prov", GetType(String))
         dt.Columns.Add("ANA_Cap", GetType(String))
+        dt.Columns.Add("ANA_Data_Iscrizione", GetType(DateTime))
         dt.Columns.Add("ANA_Cellulare", GetType(String))
         dt.Columns.Add("ANA_Codice_Fiscale", GetType(String))
         dt.Columns.Add("ANA_Zona", GetType(String))
@@ -899,6 +916,7 @@ Public Class Form1
         dt.Columns.Add("Localita", GetType(String))
         dt.Columns.Add("Provincia", GetType(String))
         dt.Columns.Add("CAP", GetType(String))
+        dt.Columns.Add("DataIscrizione", GetType(String))
         dt.Columns.Add("Cellulare", GetType(String))
         dt.Columns.Add("CodiceFiscale", GetType(String))
         dt.Columns.Add("Zona", GetType(String))
@@ -909,7 +927,7 @@ Public Class Form1
 
         Using conn As New MySqlConnection(ConnectionString)
             conn.Open()
-            Dim sql As String = "SELECT id, ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, ANA_Cap, ANA_Cellulare, ANA_Codice_Fiscale, ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato FROM anagrafico ORDER BY ANA_Cognome, ANA_Nome"
+            Dim sql As String = "SELECT id, ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, ANA_Cap, ANA_Data_Iscrizione, ANA_Cellulare, ANA_Codice_Fiscale, ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato FROM anagrafico ORDER BY ANA_Cognome, ANA_Nome"
             Using cmd As New MySqlCommand(sql, conn)
                 Using reader As MySqlDataReader = cmd.ExecuteReader()
                     While reader.Read()
@@ -925,6 +943,7 @@ Public Class Form1
                         row("Localita") = If(IsDBNull(reader("ANA_localita")), "", reader("ANA_localita"))
                         row("Provincia") = If(IsDBNull(reader("ANA_Prov")), "", reader("ANA_Prov"))
                         row("CAP") = If(IsDBNull(reader("ANA_Cap")), "", reader("ANA_Cap"))
+                        row("DataIscrizione") = If(IsDBNull(reader("ANA_Data_Iscrizione")), "", CDate(reader("ANA_Data_Iscrizione")).ToString("dd/MM/yyyy"))
                         row("Cellulare") = If(IsDBNull(reader("ANA_Cellulare")), "", reader("ANA_Cellulare"))
                         row("CodiceFiscale") = If(IsDBNull(reader("ANA_Codice_Fiscale")), "", reader("ANA_Codice_Fiscale"))
                         row("Zona") = If(IsDBNull(reader("ANA_Zona")), "", reader("ANA_Zona"))
