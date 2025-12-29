@@ -33,7 +33,8 @@ Public Class Form1
         EnhanceGridLookAndFeel()
 
         LoadZones()
-        LoadQualifiche()  ' AGGIUNTO
+        LoadQualifiche()
+        LoadSessoOptions()  ' AGGIUNTO
         LoadData()
         AttachGridContextMenu()
     End Sub
@@ -61,7 +62,7 @@ Public Class Form1
         AddHandler dgvAnagrafico.CellDoubleClick, AddressOf dgvAnagrafico_CellDoubleClick
     End Sub
 
-    ' Carica le zone nel ComboBox (se presente nel Designer)
+    ' Carica le zone nel ComboBox con codice e descrizione affiancati
     Private Sub LoadZones()
         Try
             Using conn As New MySqlConnection(ConnectionString)
@@ -71,10 +72,14 @@ Public Class Form1
                     Dim da As New MySqlDataAdapter(cmd)
                     Dim dt As New DataTable()
                     da.Fill(dt)
+
+                    ' Aggiungi una colonna calcolata per mostrare Cod_zona + Desc_zona
+                    dt.Columns.Add("DisplayText", GetType(String), "Cod_zona + ' ' + Desc_zona")
+
                     If Me.Controls.ContainsKey("cmbZona") Then
                         Dim cmb = CType(Me.Controls("cmbZona"), ComboBox)
-                        cmb.DisplayMember = "Desc_zona"
-                        cmb.ValueMember = "Cod_zona"
+                        cmb.DisplayMember = "DisplayText"  ' Mostra la colonna calcolata
+                        cmb.ValueMember = "Cod_zona"       ' Il valore rimane Cod_zona
                         cmb.DataSource = dt
                         cmb.SelectedIndex = -1
                     End If
@@ -106,16 +111,39 @@ Public Class Form1
         End Try
     End Sub
 
+    ' Carica le opzioni di sesso nel ComboBox
+    Private Sub LoadSessoOptions()
+        cmbSesso.Items.Clear()
+        cmbSesso.Items.Add("M")
+        cmbSesso.Items.Add("F")
+        cmbSesso.SelectedIndex = -1
+    End Sub
+
     ' Carica i dati dal DB e li lega al BindingSource
     Private Sub LoadData(Optional filter As String = "")
         Try
             Using conn As New MySqlConnection(ConnectionString)
                 conn.Open()
-                Dim sql As String = "SELECT id, ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, ANA_Cap, ANA_Cellulare, ANA_Codice_Fiscale, ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato, ANA_Assicurato FROM anagrafico"
+                ' MODIFICATO: Aggiunto LEFT JOIN con zone per la ricerca, ma selezioniamo solo le colonne originali
+                Dim sql As String = "SELECT a.id, a.ANA_Cognome, a.ANA_Nome, a.ANA_data_nascita, a.ANA_Sesso, a.ANA_Qualifica, " &
+                               "a.ANA_indirizzo, a.ANA_civico, a.ANA_localita, a.ANA_Prov, a.ANA_Cap, a.ANA_Cellulare, " &
+                               "a.ANA_Codice_Fiscale, a.ANA_Zona, a.ANA_Scad_tessera, a.ANA_Socio, a.ANA_Milite, " &
+                               "a.ANA_Annullato, a.ANA_Assicurato " &
+                               "FROM anagrafico a " &
+                               "LEFT JOIN zone z ON a.ANA_Zona = z.Cod_zona"
+
                 If Not String.IsNullOrWhiteSpace(filter) Then
-                    sql &= " WHERE ANA_Cognome LIKE @f OR ANA_Nome LIKE @f OR ANA_Codice_Fiscale LIKE @f OR ANA_Cellulare LIKE @f OR ANA_Qualifica LIKE @f"
+                    ' MODIFICATO: Aggiunta ricerca su codice e descrizione zona
+                    sql &= " WHERE a.ANA_Cognome LIKE @f " &
+                       "OR a.ANA_Nome LIKE @f " &
+                       "OR a.ANA_Codice_Fiscale LIKE @f " &
+                       "OR a.ANA_Cellulare LIKE @f " &
+                       "OR a.ANA_Qualifica LIKE @f " &
+                       "OR z.Cod_zona LIKE @f " &
+                       "OR z.Desc_zona LIKE @f"
                 End If
-                sql &= " ORDER BY id"
+                sql &= " ORDER BY a.id"
+
                 Using cmd As New MySqlCommand(sql, conn)
                     If Not String.IsNullOrWhiteSpace(filter) Then
                         cmd.Parameters.AddWithValue("@f", $"%{filter}%")
@@ -382,6 +410,7 @@ Public Class Form1
             Dim json = File.ReadAllText(path, Encoding.UTF8)
             Dim colsDef = JsonSerializer.Deserialize(Of List(Of ColumnLayout))(json)
             If colsDef Is Nothing Then Return
+
             For Each def In colsDef
                 If dgvAnagrafico.Columns.Contains(def.Name) Then
                     Dim c = dgvAnagrafico.Columns(def.Name)
@@ -438,7 +467,7 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Cognome", txtCognome.Text.Trim())
                     cmd.Parameters.AddWithValue("@Nome", txtNome.Text.Trim())
                     cmd.Parameters.AddWithValue("@DataNascita", If(dtpDataNascita.Checked, CType(dtpDataNascita.Value, Object), DBNull.Value))
-                    cmd.Parameters.AddWithValue("@Sesso", If(String.IsNullOrWhiteSpace(txtSesso.Text), DBNull.Value, txtSesso.Text.Trim().ToUpper()))
+                    cmd.Parameters.AddWithValue("@Sesso", If(cmbSesso.SelectedIndex = -1, DBNull.Value, cmbSesso.SelectedItem.ToString()))
                     cmd.Parameters.AddWithValue("@Qualifica", If(cmbQualifica.SelectedValue Is Nothing, DBNull.Value, cmbQualifica.SelectedValue))
                     cmd.Parameters.AddWithValue("@Indirizzo", If(String.IsNullOrWhiteSpace(txtIndirizzo.Text), DBNull.Value, txtIndirizzo.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Civico", If(String.IsNullOrWhiteSpace(txtCivico.Text), DBNull.Value, txtCivico.Text.Trim()))
@@ -481,7 +510,7 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Cognome", txtCognome.Text.Trim())
                     cmd.Parameters.AddWithValue("@Nome", txtNome.Text.Trim())
                     cmd.Parameters.AddWithValue("@DataNascita", If(dtpDataNascita.Checked, CType(dtpDataNascita.Value, Object), DBNull.Value))
-                    cmd.Parameters.AddWithValue("@Sesso", If(String.IsNullOrWhiteSpace(txtSesso.Text), DBNull.Value, txtSesso.Text.Trim().ToUpper()))
+                    cmd.Parameters.AddWithValue("@Sesso", If(cmbSesso.SelectedIndex = -1, DBNull.Value, cmbSesso.SelectedItem.ToString()))
                     cmd.Parameters.AddWithValue("@Qualifica", If(cmbQualifica.SelectedValue Is Nothing, DBNull.Value, cmbQualifica.SelectedValue))  ' CORRETTO: era txtQualifica.Text
                     cmd.Parameters.AddWithValue("@Indirizzo", If(String.IsNullOrWhiteSpace(txtIndirizzo.Text), DBNull.Value, txtIndirizzo.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Civico", If(String.IsNullOrWhiteSpace(txtCivico.Text), DBNull.Value, txtCivico.Text.Trim()))
@@ -552,8 +581,8 @@ Public Class Form1
         txtNome.Clear()
         dtpDataNascita.Checked = False
         dtpDataNascita.Value = DateTime.Today
-        txtSesso.Clear()
-        cmbQualifica.SelectedIndex = -1  ' MODIFICATO
+        cmbSesso.SelectedIndex = -1  ' MODIFICATO
+        cmbQualifica.SelectedIndex = -1
         txtIndirizzo.Clear()
         txtCivico.Clear()
         txtLocalita.Clear()
@@ -587,7 +616,18 @@ Public Class Form1
                 dtpDataNascita.Checked = False
             End If
 
-            txtSesso.Text = Convert.ToString(row.Cells("ANA_Sesso").Value)
+            ' MODIFICATO: Gestione ComboBox Sesso
+            Dim sesso = Convert.ToString(row.Cells("ANA_Sesso").Value)
+            If Not String.IsNullOrWhiteSpace(sesso) Then
+                Dim sessoUpper = sesso.ToUpper()
+                If sessoUpper = "M" OrElse sessoUpper = "F" Then
+                    cmbSesso.SelectedItem = sessoUpper
+                Else
+                    cmbSesso.SelectedIndex = -1
+                End If
+            Else
+                cmbSesso.SelectedIndex = -1
+            End If
 
             ' MODIFICATO: Gestione ComboBox Qualifica
             Dim qualifica = row.Cells("ANA_Qualifica").Value
@@ -635,18 +675,42 @@ Public Class Form1
 
     ' --- Funzioni utility ---
     Private Function ReadConnectionString() As String
+        Dim configPath = Path.Combine(Application.StartupPath, "dbconfig.json")
+
         Try
-            Dim configPath = Path.Combine(Application.StartupPath, "dbconfig.json")
             If File.Exists(configPath) Then
                 Dim json = File.ReadAllText(configPath)
                 Dim cfg = JsonSerializer.Deserialize(Of DbConfig)(json)
                 If cfg IsNot Nothing Then
                     Return $"Server={cfg.Server};Database={cfg.Database};Uid={cfg.User};Pwd={cfg.Password};"
+                Else
+                    ' File esiste ma è vuoto o malformato
+                    MessageBox.Show("Il file dbconfig.json esiste ma non contiene dati validi." & Environment.NewLine &
+                                   "Verrà usata la connessione di fallback.",
+                                   "Configurazione DB",
+                                   MessageBoxButtons.OK,
+                                   MessageBoxIcon.Warning)
                 End If
+            Else
+                ' AGGIUNTO: File non esiste
+                MessageBox.Show("Il file dbconfig.json non è stato trovato." & Environment.NewLine &
+                               "Verrà usata la connessione di fallback." & Environment.NewLine & Environment.NewLine &
+                               "Percorso cercato: " & configPath,
+                               "Configurazione DB",
+                               MessageBoxButtons.OK,
+                               MessageBoxIcon.Information)
             End If
         Catch ex As Exception
-            MessageBox.Show($"Attenzione: impossibile leggere dbconfig.json, verrà usata la connessione di fallback.{Environment.NewLine}{ex.Message}", "Info", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            ' Errore durante la lettura/parsing
+            MessageBox.Show($"Errore durante la lettura di dbconfig.json:" & Environment.NewLine & Environment.NewLine &
+                           $"{ex.Message}" & Environment.NewLine & Environment.NewLine &
+                           "Verrà usata la connessione di fallback.",
+                           "Configurazione DB",
+                           MessageBoxButtons.OK,
+                           MessageBoxIcon.Warning)
         End Try
+
+        ' Fallback in tutti i casi
         Return "Server=localhost;Database=db_01;Uid=root;Pwd=Mauro1963?;"
     End Function
 

@@ -21,7 +21,7 @@ Partial Class Form1
     Friend WithEvents txtCognome As System.Windows.Forms.TextBox
     Friend WithEvents txtNome As System.Windows.Forms.TextBox
     Friend WithEvents dtpDataNascita As System.Windows.Forms.DateTimePicker
-    Friend WithEvents txtSesso As System.Windows.Forms.TextBox
+    Friend WithEvents cmbSesso As System.Windows.Forms.ComboBox
     Friend WithEvents cmbQualifica As System.Windows.Forms.ComboBox  ' MODIFICATO: da txtQualifica a cmbQualifica
     Friend WithEvents txtIndirizzo As System.Windows.Forms.TextBox
     Friend WithEvents txtCivico As System.Windows.Forms.TextBox
@@ -59,7 +59,7 @@ Partial Class Form1
         txtCognome = New TextBox()
         txtNome = New TextBox()
         dtpDataNascita = New DateTimePicker()
-        txtSesso = New TextBox()
+        cmbSesso = New ComboBox()
         cmbQualifica = New ComboBox()  ' MODIFICATO
         txtIndirizzo = New TextBox()
         txtCivico = New TextBox()
@@ -135,13 +135,15 @@ Partial Class Form1
         dtpDataNascita.Size = New Size(200, 27)
         dtpDataNascita.TabIndex = 4
         ' 
-        ' txtSesso
+        ' cmbSesso
         ' 
-        txtSesso.Location = New Point(790, 164)
-        txtSesso.MaxLength = 1
-        txtSesso.Name = "txtSesso"
-        txtSesso.Size = New Size(50, 27)
-        txtSesso.TabIndex = 5
+        cmbSesso.DropDownStyle = ComboBoxStyle.DropDownList
+        cmbSesso.FormattingEnabled = True
+        cmbSesso.Items.AddRange(New Object() {"M", "F"})
+        cmbSesso.Location = New Point(790, 164)
+        cmbSesso.Name = "cmbSesso"
+        cmbSesso.Size = New Size(50, 28)
+        cmbSesso.TabIndex = 5
         ' 
         ' cmbQualifica
         ' 
@@ -405,7 +407,7 @@ Partial Class Form1
         Controls.Add(txtCivico)
         Controls.Add(txtIndirizzo)
         Controls.Add(cmbQualifica)
-        Controls.Add(txtSesso)
+        Controls.Add(cmbSesso)
         Controls.Add(dtpDataNascita)
         Controls.Add(txtNome)
         Controls.Add(txtCognome)
