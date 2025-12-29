@@ -23,23 +23,17 @@ Public Class Form1
     Private currentPrintRow As Integer = 0
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        ' Abilita BinaryFormatter per ReportViewer (necessario per .NET recente)
         Try
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", True)
         Catch ex As Exception
-            ' Ignora se già impostato
         End Try
 
-        ' Legge la stringa di connessione da file esterno
         ConnectionString = ReadConnectionString()
-
-        ' BindingSource per abilitare sort/filter e separare il DataTable dal DataGridView
         bsAnagrafico = New BindingSource()
-
-        ' Imposta comportamenti della griglia (generici)
         EnhanceGridLookAndFeel()
 
         LoadZones()
+        LoadQualifiche()  ' AGGIUNTO
         LoadData()
         AttachGridContextMenu()
     End Sub
@@ -88,6 +82,27 @@ Public Class Form1
             End Using
         Catch ex As Exception
             MessageBox.Show($"Errore caricamento zone: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ' Carica le qualifiche nel ComboBox
+    Private Sub LoadQualifiche()
+        Try
+            Using conn As New MySqlConnection(ConnectionString)
+                conn.Open()
+                Dim sql As String = "SELECT Cod_qualifica, Desc_qualifica FROM qualifica ORDER BY Desc_qualifica"
+                Using cmd As New MySqlCommand(sql, conn)
+                    Dim da As New MySqlDataAdapter(cmd)
+                    Dim dt As New DataTable()
+                    da.Fill(dt)
+                    cmbQualifica.DisplayMember = "Desc_qualifica"
+                    cmbQualifica.ValueMember = "Cod_qualifica"
+                    cmbQualifica.DataSource = dt
+                    cmbQualifica.SelectedIndex = -1
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show($"Errore caricamento qualifiche: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
@@ -206,6 +221,21 @@ Public Class Form1
                 End If
             Next
 
+            ' Riordina le colonne: Sesso subito dopo Nome
+            If dgvAnagrafico.Columns.Contains("ANA_Nome") AndAlso dgvAnagrafico.Columns.Contains("ANA_Sesso") Then
+                Dim nomeIndex As Integer = dgvAnagrafico.Columns("ANA_Nome").DisplayIndex
+                dgvAnagrafico.Columns("ANA_Sesso").DisplayIndex = nomeIndex + 1
+
+                ' Sposta le altre colonne di conseguenza per evitare conflitti
+                For Each col As DataGridViewColumn In dgvAnagrafico.Columns
+                    If col.Name <> "ANA_Sesso" AndAlso col.Name <> "ANA_Nome" Then
+                        If col.DisplayIndex > nomeIndex AndAlso col.DisplayIndex <= nomeIndex + 1 Then
+                            col.DisplayIndex += 1
+                        End If
+                    End If
+                Next
+            End If
+
             Try
                 dgvAnagrafico.AutoResizeColumns()
                 If dgvAnagrafico.Columns.Contains("ANA_Cognome") Then
@@ -237,13 +267,17 @@ Public Class Form1
         Try
             If Not highlightEnabled Then Return
             If dgvAnagrafico.Columns.Contains("ANA_Scad_tessera") Then
+                ' Leggi la data di riferimento dalla tabella tes_scad
+                Dim dataRiferimento As DateTime = GetDataScadenzaRiferimento()
+
                 For Each row As DataGridViewRow In dgvAnagrafico.Rows
                     If row.IsNewRow Then Continue For
                     Dim v = row.Cells("ANA_Scad_tessera").Value
                     If v IsNot Nothing AndAlso Not IsDBNull(v) Then
                         Dim d As DateTime
                         If DateTime.TryParse(Convert.ToString(v), d) Then
-                            If d.Date < DateTime.Today Then
+                            ' MODIFICATO: Confronta con dataRiferimento invece di DateTime.Today
+                            If d.Date < dataRiferimento.Date Then
                                 row.DefaultCellStyle.BackColor = Color.LightCoral
                                 row.DefaultCellStyle.ForeColor = Color.White
                             Else
@@ -405,7 +439,7 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Nome", txtNome.Text.Trim())
                     cmd.Parameters.AddWithValue("@DataNascita", If(dtpDataNascita.Checked, CType(dtpDataNascita.Value, Object), DBNull.Value))
                     cmd.Parameters.AddWithValue("@Sesso", If(String.IsNullOrWhiteSpace(txtSesso.Text), DBNull.Value, txtSesso.Text.Trim().ToUpper()))
-                    cmd.Parameters.AddWithValue("@Qualifica", If(String.IsNullOrWhiteSpace(txtQualifica.Text), DBNull.Value, txtQualifica.Text.Trim()))
+                    cmd.Parameters.AddWithValue("@Qualifica", If(cmbQualifica.SelectedValue Is Nothing, DBNull.Value, cmbQualifica.SelectedValue))
                     cmd.Parameters.AddWithValue("@Indirizzo", If(String.IsNullOrWhiteSpace(txtIndirizzo.Text), DBNull.Value, txtIndirizzo.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Civico", If(String.IsNullOrWhiteSpace(txtCivico.Text), DBNull.Value, txtCivico.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Localita", If(String.IsNullOrWhiteSpace(txtLocalita.Text), DBNull.Value, txtLocalita.Text.Trim()))
@@ -448,7 +482,7 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Nome", txtNome.Text.Trim())
                     cmd.Parameters.AddWithValue("@DataNascita", If(dtpDataNascita.Checked, CType(dtpDataNascita.Value, Object), DBNull.Value))
                     cmd.Parameters.AddWithValue("@Sesso", If(String.IsNullOrWhiteSpace(txtSesso.Text), DBNull.Value, txtSesso.Text.Trim().ToUpper()))
-                    cmd.Parameters.AddWithValue("@Qualifica", If(String.IsNullOrWhiteSpace(txtQualifica.Text), DBNull.Value, txtQualifica.Text.Trim()))
+                    cmd.Parameters.AddWithValue("@Qualifica", If(cmbQualifica.SelectedValue Is Nothing, DBNull.Value, cmbQualifica.SelectedValue))  ' CORRETTO: era txtQualifica.Text
                     cmd.Parameters.AddWithValue("@Indirizzo", If(String.IsNullOrWhiteSpace(txtIndirizzo.Text), DBNull.Value, txtIndirizzo.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Civico", If(String.IsNullOrWhiteSpace(txtCivico.Text), DBNull.Value, txtCivico.Text.Trim()))
                     cmd.Parameters.AddWithValue("@Localita", If(String.IsNullOrWhiteSpace(txtLocalita.Text), DBNull.Value, txtLocalita.Text.Trim()))
@@ -519,7 +553,7 @@ Public Class Form1
         dtpDataNascita.Checked = False
         dtpDataNascita.Value = DateTime.Today
         txtSesso.Clear()
-        txtQualifica.Clear()
+        cmbQualifica.SelectedIndex = -1  ' MODIFICATO
         txtIndirizzo.Clear()
         txtCivico.Clear()
         txtLocalita.Clear()
@@ -554,7 +588,15 @@ Public Class Form1
             End If
 
             txtSesso.Text = Convert.ToString(row.Cells("ANA_Sesso").Value)
-            txtQualifica.Text = Convert.ToString(row.Cells("ANA_Qualifica").Value)
+
+            ' MODIFICATO: Gestione ComboBox Qualifica
+            Dim qualifica = row.Cells("ANA_Qualifica").Value
+            If qualifica IsNot Nothing AndAlso Not IsDBNull(qualifica) Then
+                cmbQualifica.SelectedValue = qualifica
+            Else
+                cmbQualifica.SelectedIndex = -1
+            End If
+
             txtIndirizzo.Text = Convert.ToString(row.Cells("ANA_indirizzo").Value)
             txtCivico.Text = Convert.ToString(row.Cells("ANA_civico").Value)
             txtLocalita.Text = Convert.ToString(row.Cells("ANA_localita").Value)
@@ -680,6 +722,9 @@ Public Class Form1
             Dim dataFont As New Font("Arial", 7)
             Dim lineHeight As Single = dataFont.GetHeight(e.Graphics)
 
+            ' Leggi la data di riferimento dalla tabella tes_scad
+            Dim dataRiferimento As DateTime = GetDataScadenzaRiferimento()
+
             If currentPrintRow = 0 Then
                 e.Graphics.DrawString("REPORT ANAGRAFICO", titleFont, Brushes.Black, e.MarginBounds.Left, yPos)
                 yPos += titleFont.GetHeight(e.Graphics) * 1.3
@@ -688,18 +733,35 @@ Public Class Form1
             End If
 
             Dim colWidths As New Dictionary(Of String, Single) From {
-                {"id", 35}, {"Cognome", 90}, {"Nome", 80}, {"DataNascita", 70},
-                {"Localita", 100}, {"Provincia", 30}, {"Cellulare", 85},
-                {"CodiceFiscale", 105}, {"ScadenzaTessera", 75},
-                {"Socio", 35}, {"Milite", 35}, {"Annullato", 45}
+                {"id", 30},
+                {"Cognome", 75},
+                {"Nome", 70},
+                {"Sesso", 25},
+                {"Qualifica", 65},
+                {"DataNascita", 65},
+                {"Localita", 90},
+                {"Provincia", 25},
+                {"Cellulare", 75},
+                {"ScadenzaTessera", 70},
+                {"Socio", 30},
+                {"Milite", 30},
+                {"Annullato", 40}
             }
 
             Dim colHeaders As New Dictionary(Of String, String) From {
-                {"id", "ID"}, {"Cognome", "Cognome"}, {"Nome", "Nome"},
-                {"DataNascita", "Nascita"}, {"Localita", "Località"},
-                {"Provincia", "Pr"}, {"Cellulare", "Cellulare"},
-                {"CodiceFiscale", "Codice Fiscale"}, {"ScadenzaTessera", "Scad.Tessera"},
-                {"Socio", "Socio"}, {"Milite", "Milite"}, {"Annullato", "Ann."}
+                {"id", "ID"},
+                {"Cognome", "Cognome"},
+                {"Nome", "Nome"},
+                {"Sesso", "S"},
+                {"Qualifica", "Qualifica"},
+                {"DataNascita", "Nascita"},
+                {"Localita", "Località"},
+                {"Provincia", "Pr"},
+                {"Cellulare", "Cellulare"},
+                {"ScadenzaTessera", "Scad.Tess."},
+                {"Socio", "Socio"},
+                {"Milite", "Milite"},
+                {"Annullato", "Ann."}
             }
 
             Dim currentX As Single = xPos
@@ -727,7 +789,8 @@ Public Class Form1
                 If Not String.IsNullOrEmpty(row("ScadenzaTessera").ToString()) Then
                     Dim dataScad As DateTime
                     If DateTime.TryParseExact(row("ScadenzaTessera").ToString(), "dd/MM/yyyy", Nothing, Globalization.DateTimeStyles.None, dataScad) Then
-                        If dataScad.Date < DateTime.Today Then
+                        ' MODIFICATO: Confronta con dataRiferimento invece di DateTime.Today
+                        If dataScad.Date < dataRiferimento.Date Then
                             e.Graphics.FillRectangle(New SolidBrush(Color.FromArgb(255, 200, 200)), xPos, yPos, e.MarginBounds.Width, rowHeight)
                             isScaduto = True
                         End If
@@ -816,4 +879,24 @@ Public Class Form1
     Private Sub btnStampa_Click(sender As Object, e As EventArgs) Handles btnStampa.Click
         StampaReport()
     End Sub
+
+    ' Legge la data di scadenza di riferimento dalla tabella tes_scad
+    Private Function GetDataScadenzaRiferimento() As DateTime
+        Try
+            Using conn As New MySqlConnection(ConnectionString)
+                conn.Open()
+                Dim sql As String = "SELECT data_scad_tes FROM tes_scad LIMIT 1"
+                Using cmd As New MySqlCommand(sql, conn)
+                    Dim result = cmd.ExecuteScalar()
+                    If result IsNot Nothing AndAlso Not IsDBNull(result) Then
+                        Return Convert.ToDateTime(result)
+                    End If
+                End Using
+            End Using
+        Catch ex As Exception
+            MessageBox.Show($"Errore lettura data scadenza: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+        ' Fallback alla data odierna in caso di errore
+        Return DateTime.Today
+    End Function
 End Class
