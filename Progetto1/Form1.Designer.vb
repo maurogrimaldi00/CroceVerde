@@ -90,6 +90,7 @@ Partial Class Form1
         Label1 = New Label()
         Label2 = New Label()
         Label3 = New Label()
+        Button1 = New Button()
         CType(dgvAnagrafico, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
@@ -416,9 +417,19 @@ Partial Class Form1
         Label3.TabIndex = 36
         Label3.Text = "scadenza"
         ' 
+        ' Button1
+        ' 
+        Button1.Location = New Point(348, 531)
+        Button1.Name = "Button1"
+        Button1.Size = New Size(142, 33)
+        Button1.TabIndex = 37
+        Button1.Text = "FastReport"
+        Button1.UseVisualStyleBackColor = True
+        ' 
         ' Form1
         ' 
         ClientSize = New Size(1090, 760)
+        Controls.Add(Button1)
         Controls.Add(Label3)
         Controls.Add(Label2)
         Controls.Add(Label1)
@@ -468,5 +479,6 @@ Partial Class Form1
     Friend WithEvents Label1 As Label
     Friend WithEvents Label2 As Label
     Friend WithEvents Label3 As Label
+    Friend WithEvents Button1 As Button
 
 End Class

@@ -1,12 +1,17 @@
-﻿Imports System.Data
-Imports MySql.Data.MySqlClient
-Imports System.IO
-Imports System.Text.Json
-Imports System.Text
-Imports System.Windows.Forms
+﻿Imports System.ComponentModel
+Imports System.Data
 Imports System.Drawing
-Imports Microsoft.Reporting.WinForms
+'Imports Microsoft.Reporting.WinForms
 Imports System.Drawing.Printing
+Imports System.IO
+Imports System.Text
+Imports System.Text.Json
+Imports System.Windows.Forms
+Imports FastReport
+Imports FastReport.Data
+Imports FastReport.Utils
+Imports MySql.Data.MySqlClient
+
 
 Public Class Form1
 
@@ -650,8 +655,8 @@ Public Class Form1
             txtProv.Text = Convert.ToString(row.Cells("ANA_Prov").Value)
             txtCap.Text = Convert.ToString(row.Cells("ANA_Cap").Value)
 
-                Dim dataIscrizione = row.Cells("ANA_Data_Iscrizione").Value
-                If dataIscrizione IsNot Nothing AndAlso Not IsDBNull(dataIscrizione) Then
+            Dim dataIscrizione = row.Cells("ANA_Data_Iscrizione").Value
+            If dataIscrizione IsNot Nothing AndAlso Not IsDBNull(dataIscrizione) Then
                 dtpDataIscrizione.Value = Convert.ToDateTime(dataIscrizione)
                 dtpDataIscrizione.Checked = True
             Else
@@ -959,9 +964,159 @@ Public Class Form1
         Return dt
     End Function
 
-    Private Sub btnStampa_Click(sender As Object, e As EventArgs) Handles btnStampa.Click
-        StampaReport()
+    Private Function CaricaDatiFiltrati(zona As String, qualifica As String, soloSoci As Boolean, soloMiliti As Boolean) As DataTable
+        Dim dt As New DataTable("Anagrafico")
+
+        ' Definisci le colonne
+        dt.Columns.Add("id", GetType(Integer))
+        dt.Columns.Add("Cognome", GetType(String))
+        dt.Columns.Add("Nome", GetType(String))
+        dt.Columns.Add("DataNascita", GetType(String))
+        dt.Columns.Add("Sesso", GetType(String))
+        dt.Columns.Add("Qualifica", GetType(String))
+        dt.Columns.Add("Indirizzo", GetType(String))
+        dt.Columns.Add("Civico", GetType(String))
+        dt.Columns.Add("Localita", GetType(String))
+        dt.Columns.Add("Provincia", GetType(String))
+        dt.Columns.Add("CAP", GetType(String))
+        dt.Columns.Add("DataIscrizione", GetType(String))
+        dt.Columns.Add("Cellulare", GetType(String))
+        dt.Columns.Add("CodiceFiscale", GetType(String))
+        dt.Columns.Add("Zona", GetType(String))
+        dt.Columns.Add("ScadenzaTessera", GetType(String))
+        dt.Columns.Add("Socio", GetType(String))
+        dt.Columns.Add("Milite", GetType(String))
+        dt.Columns.Add("Annullato", GetType(String))
+
+        Using conn As New MySqlConnection(ConnectionString)
+            conn.Open()
+
+            ' Query SQL con filtri dinamici
+            Dim sql As String = "SELECT id, ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, " +
+                       "ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, " +
+                       "ANA_Cap, ANA_Data_Iscrizione, ANA_Cellulare, ANA_Codice_Fiscale, " +
+                       "ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato " +
+                       "FROM anagrafico WHERE 1=1"
+
+            ' Aggiungi filtri solo se i parametri non sono vuoti
+            If Not String.IsNullOrWhiteSpace(zona) Then
+                sql &= " AND TRIM(ANA_Zona) = @Zona"
+            End If
+
+            If Not String.IsNullOrWhiteSpace(qualifica) Then
+                sql &= " AND ANA_Qualifica = @Qualifica"
+            End If
+
+            If soloSoci Then
+                sql &= " AND ANA_Socio = 1"
+            End If
+
+            If soloMiliti Then
+                sql &= " AND ANA_Milite = 1"
+            End If
+
+            sql &= " ORDER BY ANA_Cognome, ANA_Nome"
+
+            Using cmd As New MySqlCommand(sql, conn)
+                ' Aggiungi i parametri alla query
+                If Not String.IsNullOrWhiteSpace(zona) Then
+                    cmd.Parameters.AddWithValue("@Zona", zona)
+                End If
+
+                If Not String.IsNullOrWhiteSpace(qualifica) Then
+                    cmd.Parameters.AddWithValue("@Qualifica", qualifica)
+                End If
+
+                Using reader As MySqlDataReader = cmd.ExecuteReader()
+                    While reader.Read()
+                        Dim row As DataRow = dt.NewRow()
+                        row("id") = reader("id")
+                        row("Cognome") = If(IsDBNull(reader("ANA_Cognome")), "", reader("ANA_Cognome"))
+                        row("Nome") = If(IsDBNull(reader("ANA_Nome")), "", reader("ANA_Nome"))
+                        row("DataNascita") = If(IsDBNull(reader("ANA_data_nascita")), "", CDate(reader("ANA_data_nascita")).ToString("dd/MM/yyyy"))
+                        row("Sesso") = If(IsDBNull(reader("ANA_Sesso")), "", reader("ANA_Sesso"))
+                        row("Qualifica") = If(IsDBNull(reader("ANA_Qualifica")), "", reader("ANA_Qualifica"))
+                        row("Indirizzo") = If(IsDBNull(reader("ANA_indirizzo")), "", reader("ANA_indirizzo"))
+                        row("Civico") = If(IsDBNull(reader("ANA_civico")), "", reader("ANA_civico"))
+                        row("Localita") = If(IsDBNull(reader("ANA_localita")), "", reader("ANA_localita"))
+                        row("Provincia") = If(IsDBNull(reader("ANA_Prov")), "", reader("ANA_Prov"))
+                        row("CAP") = If(IsDBNull(reader("ANA_Cap")), "", reader("ANA_Cap"))
+                        row("DataIscrizione") = If(IsDBNull(reader("ANA_Data_Iscrizione")), "", CDate(reader("ANA_Data_Iscrizione")).ToString("dd/MM/yyyy"))
+                        row("Cellulare") = If(IsDBNull(reader("ANA_Cellulare")), "", reader("ANA_Cellulare"))
+                        row("CodiceFiscale") = If(IsDBNull(reader("ANA_Codice_Fiscale")), "", reader("ANA_Codice_Fiscale"))
+                        row("Zona") = If(IsDBNull(reader("ANA_Zona")), "", reader("ANA_Zona"))
+                        row("ScadenzaTessera") = If(IsDBNull(reader("ANA_Scad_tessera")), "", CDate(reader("ANA_Scad_tessera")).ToString("dd/MM/yyyy"))
+                        row("Socio") = If(ToIntOrZero(reader("ANA_Socio")) = 1, "Sì", "No")
+                        row("Milite") = If(ToIntOrZero(reader("ANA_Milite")) = 1, "Sì", "No")
+                        row("Annullato") = If(ToIntOrZero(reader("ANA_Annullato")) = 1, "Sì", "No")
+                        dt.Rows.Add(row)
+                    End While
+                End Using
+            End Using
+        End Using
+
+        Return dt
+    End Function
+
+
+
+
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Try
+            Using frmFiltri As New FormFiltriReport(ConnectionString)
+                If frmFiltri.ShowDialog() = DialogResult.OK Then
+
+                    ' Carica i dati filtrati
+                    Dim dtFiltrato As DataTable = CaricaDatiFiltrati(
+                    frmFiltri.ZonaSelezionata,
+                    frmFiltri.QualificaSelezionata,
+                    frmFiltri.SoloSoci,
+                    frmFiltri.SoloMiliti)
+
+                    ' Verifica che ci siano dati
+                    If dtFiltrato.Rows.Count = 0 Then
+                        MessageBox.Show("Nessun dato trovato con i filtri specificati.",
+                              "Informazione", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                        Return
+                    End If
+
+                    ' ✅ USA LA CLASSE HELPER PER CARICARE IL REPORT
+                    Dim report As Report = FastReportHelper.CaricaReport(
+                    "Stampa2.frx",
+                    dtFiltrato,
+                    "Anagrafico")
+
+                    ' Imposta i parametri del report
+                    FastReportHelper.ImpostaParametro(report, "Para1", $"Zona: {frmFiltri.ZonaDescrizione}")
+                    FastReportHelper.ImpostaParametro(report, "Para2", $"Qualifica: {frmFiltri.QualificaDescrizione}")
+
+                    ' Mostra il report
+                    FastReportHelper.MostraReport(report)
+
+                End If
+            End Using
+        Catch ex As Exception
+            MessageBox.Show($"Errore durante la generazione del report:{vbCrLf}{vbCrLf}{ex.Message}",
+                   "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
+
+    ' Funzione helper per costruire la descrizione dei filtri
+    Private Function BuildFiltriDescription(zona As String, qualifica As String,
+                                           soloSoci As Boolean, soloMiliti As Boolean) As String
+        Dim filtri As New List(Of String)
+
+        If zona <> "Tutte" Then filtri.Add($"Zona: {zona}")
+        If qualifica <> "Tutte" Then filtri.Add($"Qualifica: {qualifica}")
+        If soloSoci Then filtri.Add("Solo Soci")
+        If soloMiliti Then filtri.Add("Solo Militi")
+
+        If filtri.Count = 0 Then
+            Return "Nessun filtro applicato"
+        Else
+            Return String.Join(", ", filtri)
+        End If
+    End Function
 
     ' Legge la data di scadenza di riferimento dalla tabella tes_scad
     Private Function GetDataScadenzaRiferimento() As DateTime
