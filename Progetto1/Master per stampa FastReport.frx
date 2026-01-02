@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="12/30/2025 19:46:12" ReportInfo.Modified="12/30/2025 23:00:00" ReportInfo.CreatorVersion="2026.1.0.0">
+  <Dictionary>
+    <TableDataSource Name="Anagrafico" ReferenceName="Anagrafico" DataType="System.Int32" Enabled="true">
+      <Column Name="id" DataType="System.Int32"/>
+      <Column Name="Cognome" DataType="System.String"/>
+      <Column Name="Nome" DataType="System.String"/>
+      <Column Name="DataNascita" DataType="System.String"/>
+      <Column Name="Sesso" DataType="System.String"/>
+      <Column Name="Qualifica" DataType="System.String"/>
+      <Column Name="Indirizzo" DataType="System.String"/>
+      <Column Name="Civico" DataType="System.String"/>
+      <Column Name="Localita" DataType="System.String"/>
+      <Column Name="Provincia" DataType="System.String"/>
+      <Column Name="CAP" DataType="System.String"/>
+      <Column Name="DataIscrizione" DataType="System.String"/>
+      <Column Name="Cellulare" DataType="System.String"/>
+      <Column Name="CodiceFiscale" DataType="System.String"/>
+      <Column Name="Zona" DataType="System.String"/>
+      <Column Name="ScadenzaTessera" DataType="System.String"/>
+      <Column Name="Socio" DataType="System.String"/>
+      <Column Name="Milite" DataType="System.String"/>
+      <Column Name="Annullato" DataType="System.String"/>
+    </TableDataSource>
+    <Parameter Name="Para1" DataType="System.String" AsString=""/>
+    <Parameter Name="Para2" DataType="System.String" AsString=""/>
+  </Dictionary>
+  <ReportPage Name="Page1" Watermark.Font="Arial, 60pt" PaperWidth="297" PaperHeight="210" RawPaperSize="9" LeftMargin="10" TopMargin="10" RightMargin="10" BottomMargin="10">
+    <ReportTitleBand Name="ReportTitle1" Width="1048.95" Height="56.7">
+      <TextObject Name="TextTitle" Left="9.45" Top="9.45" Width="1030.05" Height="18.9" Text="REPORT ANAGRAFICO" Font="Arial, 14pt, style=Bold"/>
+      <TextObject Name="TextPara1" Left="9.45" Top="28.35" Width="500" Height="18.9" Text="[Para1]" Font="Arial, 10pt"/>
+      <TextObject Name="TextPara2" Left="520" Top="28.35" Width="519.5" Height="18.9" Text="[Para2]" Font="Arial, 10pt"/>
+    </ReportTitleBand>
+    <PageHeaderBand Name="PageHeader1" Top="60.7" Width="1048.95" Height="28.35">
+      <TextObject Name="Text2" Left="9.45" Top="5" Width="120" Height="18.9" Text="Cognome" Font="Arial, 10pt, style=Bold" Fill.Color="LightGray"/>
+      <TextObject Name="Text4" Left="140" Top="5" Width="120" Height="18.9" Text="Nome" Font="Arial, 10pt, style=Bold" Fill.Color="LightGray"/>
+      <TextObject Name="Text6" Left="270" Top="5" Width="80" Height="18.9" Text="Zona" Font="Arial, 10pt, style=Bold" Fill.Color="LightGray"/>
+      <TextObject Name="Text8" Left="360" Top="5" Width="120" Height="18.9" Text="Qualifica" Font="Arial, 10pt, style=Bold" Fill.Color="LightGray"/>
+    </PageHeaderBand>
+    <DataBand Name="Data1" Top="93.05" Width="1048.95" Height="22.68" DataSource="Anagrafico" CanGrow="true" CanShrink="false">
+      <TextObject Name="Text1" Left="9.45" Top="1.89" Width="120" Height="18.9" Text="[Anagrafico.Cognome]" Font="Arial, 10pt"/>
+      <TextObject Name="Text3" Left="140" Top="1.89" Width="120" Height="18.9" Text="[Anagrafico.Nome]" Font="Arial, 10pt"/>
+      <TextObject Name="Text5" Left="270" Top="1.89" Width="80" Height="18.9" Text="[Anagrafico.Zona]" Font="Arial, 10pt"/>
+      <TextObject Name="Text7" Left="360" Top="1.89" Width="120" Height="18.9" Text="[Anagrafico.Qualifica]" Font="Arial, 10pt"/>
+    </DataBand>
+    <PageFooterBand Name="PageFooter1" Top="119.73" Width="1048.95" Height="18.9">
+      <TextObject Name="TextFooter" Left="9.45" Top="0" Width="1030.05" Height="18.9" Text="Pagina [Page] di [TotalPages#]" HorzAlign="Right" Font="Arial, 9pt"/>
+    </PageFooterBand>
+  </ReportPage>
+</Report>

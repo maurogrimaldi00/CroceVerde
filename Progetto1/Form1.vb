@@ -27,21 +27,39 @@ Public Class Form1
     Private printDataTable As DataTable
     Private currentPrintRow As Integer = 0
 
+    Private dataScadenzaCache As DateTime = DateTime.MinValue
+
+
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' ✅ Forza il cursore normale IMMEDIATAMENTE
+        Me.UseWaitCursor = False
+        Me.Cursor = Cursors.Default
+
         Try
             AppContext.SetSwitch("Switch.System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", True)
         Catch ex As Exception
         End Try
 
         ConnectionString = ReadConnectionString()
+        dataScadenzaCache = GetDataScadenzaRiferimento()
         bsAnagrafico = New BindingSource()
         EnhanceGridLookAndFeel()
 
+        ' ✅ Forza il refresh del form PRIMA di caricare i dati
+        Me.Show()
+        Me.Refresh()
+        Application.DoEvents()
+
         LoadZones()
         LoadQualifiche()
-        LoadSessoOptions()  ' AGGIUNTO
+        LoadSessoOptions()
         LoadData()
         AttachGridContextMenu()
+
+        ' ✅ Forza il cursore normale ALLA FINE
+        Me.UseWaitCursor = False
+        Me.Cursor = Cursors.Default
+        Me.Refresh()
     End Sub
 
     ' --- Migliorie visuali e comportamentali per dgvAnagrafico ---
@@ -49,11 +67,13 @@ Public Class Form1
         dgvAnagrafico.AllowUserToAddRows = False
         dgvAnagrafico.AllowUserToDeleteRows = False
         dgvAnagrafico.AllowUserToOrderColumns = True
+        dgvAnagrafico.AllowUserToResizeColumns = True
         dgvAnagrafico.ReadOnly = True
         dgvAnagrafico.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         dgvAnagrafico.MultiSelect = False
         dgvAnagrafico.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None
-        dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells
+        'dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells
+        dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
         dgvAnagrafico.RowHeadersVisible = False
 
         ' Alternating row color
@@ -65,6 +85,19 @@ Public Class Form1
 
         AddHandler dgvAnagrafico.KeyDown, AddressOf dgvAnagrafico_KeyDown
         AddHandler dgvAnagrafico.CellDoubleClick, AddressOf dgvAnagrafico_CellDoubleClick
+        ' ✅ AGGIUNTO: Salva automaticamente quando l'utente ridimensiona una colonna
+        AddHandler dgvAnagrafico.ColumnWidthChanged, AddressOf dgvAnagrafico_ColumnWidthChanged
+    End Sub
+
+    ' ✅ NUOVO METODO: Salvataggio automatico del layout
+    Private Sub dgvAnagrafico_ColumnWidthChanged(sender As Object, e As DataGridViewColumnEventArgs)
+        ' Salva automaticamente dopo un breve ritardo per evitare salvataggi multipli
+        Static lastSave As DateTime = DateTime.MinValue
+        If (DateTime.Now - lastSave).TotalSeconds > 2 Then
+            SaveGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
+            lastSave = DateTime.Now
+        End If
+
     End Sub
 
     ' Carica le zone nel ComboBox con codice e descrizione affiancati
@@ -200,6 +233,7 @@ Public Class Form1
         Try
             For Each col As DataGridViewColumn In dgvAnagrafico.Columns
                 col.SortMode = DataGridViewColumnSortMode.Automatic
+                col.Resizable = DataGridViewTriState.True
             Next
 
             If dgvAnagrafico.Columns.Contains("id") Then dgvAnagrafico.Columns("id").HeaderText = "ID"
@@ -216,9 +250,15 @@ Public Class Form1
             If dgvAnagrafico.Columns.Contains("ANA_localita") Then dgvAnagrafico.Columns("ANA_localita").HeaderText = "Località"
             If dgvAnagrafico.Columns.Contains("ANA_Prov") Then dgvAnagrafico.Columns("ANA_Prov").HeaderText = "Prov."
             If dgvAnagrafico.Columns.Contains("ANA_Cap") Then dgvAnagrafico.Columns("ANA_Cap").HeaderText = "CAP"
+            If dgvAnagrafico.Columns.Contains("ANA_Codice_Fiscale") Then dgvAnagrafico.Columns("ANA_Codice_Fiscale").HeaderText = "Codice Fiscale"
+            If dgvAnagrafico.Columns.Contains("ANA_Zona") Then dgvAnagrafico.Columns("ANA_Zona").HeaderText = "Zona"
             If dgvAnagrafico.Columns.Contains("ANA_Data_Iscrizione") Then
                 dgvAnagrafico.Columns("ANA_Data_Iscrizione").HeaderText = "Data Iscrizione"
                 dgvAnagrafico.Columns("ANA_Data_Iscrizione").DefaultCellStyle.Format = "dd/MM/yyyy"
+            End If
+            If dgvAnagrafico.Columns.Contains("ANA_Scad_tessera") Then
+                dgvAnagrafico.Columns("ANA_Scad_tessera").HeaderText = "Scad.Tessera"
+                dgvAnagrafico.Columns("ANA_Scad_tessera").DefaultCellStyle.Format = "dd/MM/yyyy"
             End If
             If dgvAnagrafico.Columns.Contains("ANA_Cellulare") Then dgvAnagrafico.Columns("ANA_Cellulare").HeaderText = "Cellulare"
 
@@ -268,7 +308,7 @@ Public Class Form1
             End If
 
             Try
-                dgvAnagrafico.AutoResizeColumns()
+                'dgvAnagrafico.AutoResizeColumns() 'lascia le dimensioni dell'utente
                 If dgvAnagrafico.Columns.Contains("ANA_Cognome") Then
                     bsAnagrafico.Sort = "ANA_Cognome ASC, ANA_Nome ASC"
                 End If
@@ -295,6 +335,7 @@ Public Class Form1
     End Sub
 
     Private Sub ApplyRowHighlight()
+
         Try
             If Not highlightEnabled Then Return
             If dgvAnagrafico.Columns.Contains("ANA_Scad_tessera") Then
@@ -709,8 +750,8 @@ Public Class Form1
                     MessageBox.Show("Il file dbconfig.json esiste ma non contiene dati validi." & Environment.NewLine &
                                    "Verrà usata la connessione di fallback.",
                                    "Configurazione DB",
-                                   MessageBoxButtons.OK,
-                                   MessageBoxIcon.Warning)
+                                     MessageBoxButtons.OK,
+                                     MessageBoxIcon.Warning)
                 End If
             Else
                 ' AGGIUNTO: File non esiste
@@ -718,8 +759,8 @@ Public Class Form1
                                "Verrà usata la connessione di fallback." & Environment.NewLine & Environment.NewLine &
                                "Percorso cercato: " & configPath,
                                "Configurazione DB",
-                               MessageBoxButtons.OK,
-                               MessageBoxIcon.Information)
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information)
             End If
         Catch ex As Exception
             ' Errore durante la lettura/parsing
@@ -727,8 +768,8 @@ Public Class Form1
                            $"{ex.Message}" & Environment.NewLine & Environment.NewLine &
                            "Verrà usata la connessione di fallback.",
                            "Configurazione DB",
-                           MessageBoxButtons.OK,
-                           MessageBoxIcon.Warning)
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning)
         End Try
 
         ' Fallback in tutti i casi
@@ -1120,6 +1161,7 @@ Public Class Form1
 
     ' Legge la data di scadenza di riferimento dalla tabella tes_scad
     Private Function GetDataScadenzaRiferimento() As DateTime
+
         Try
             Using conn As New MySqlConnection(ConnectionString)
                 conn.Open()
@@ -1137,4 +1179,6 @@ Public Class Form1
         ' Fallback alla data odierna in caso di errore
         Return DateTime.Today
     End Function
+
+
 End Class

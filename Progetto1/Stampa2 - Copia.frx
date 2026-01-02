@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Report ScriptLanguage="CSharp" ReportInfo.Created="12/30/2025 19:46:12" ReportInfo.Modified="12/30/2025 23:01:31" ReportInfo.CreatorVersion="2026.1.0.0">
+<Report ScriptLanguage="CSharp" ReportInfo.Created="12/30/2025 19:46:12" ReportInfo.Modified="12/30/2025 22:47:00" ReportInfo.CreatorVersion="2026.1.0.0">
   <Dictionary>
     <TableDataSource Name="Anagrafico" ReferenceName="Anagrafico" DataType="System.Int32" Enabled="true">
       <Column Name="id" DataType="System.Int32"/>
@@ -31,7 +31,7 @@
       <TextObject Name="TextPara1" Left="9.45" Top="28.35" Width="500" Height="18.9" Text="[Para1]" Font="Arial, 10pt"/>
       <TextObject Name="TextPara2" Left="520" Top="28.35" Width="519.5" Height="18.9" Text="[Para2]" Font="Arial, 10pt"/>
     </ReportTitleBand>
-    <PageHeaderBand Name="PageHeader1" Top="59.56" Width="1047.06" Height="28.35">
+    <PageHeaderBand Name="PageHeader1" Top="60.7" Width="1047.06" Height="28.35">
       <TextObject Name="Text2" Left="9.45" Top="5" Width="120" Height="18.9" Fill.Color="LightGray" Text="Cognome" Font="Arial, 10pt, style=Bold"/>
       <TextObject Name="Text4" Left="140" Top="5" Width="120" Height="18.9" Fill.Color="LightGray" Text="Nome" Font="Arial, 10pt, style=Bold"/>
       <TextObject Name="Text6" Left="270" Top="5" Width="80" Height="18.9" Fill.Color="LightGray" Text="Zona" Font="Arial, 10pt, style=Bold"/>
@@ -40,9 +40,9 @@
       <TextObject Name="Text12" Left="595.35" Top="5" Width="94.5" Height="18.9" Fill.Color="LightGray" Text="DataIscrizione" Font="Arial, 10pt, style=Bold"/>
       <TextObject Name="Text14" Left="699.3" Top="6" Width="94.5" Height="18.9" Fill.Color="LightGray" Text="ScadenzaTessera" Font="Arial, 10pt, style=Bold"/>
     </PageHeaderBand>
-    <GroupHeaderBand Name="GroupHeader1" Top="90.76" Width="1047.06" Height="18.9" Condition="[Anagrafico.Zona]">
+    <GroupHeaderBand Name="GroupHeader1" Top="93.05" Width="1047.06" Height="18.9" Condition="[Anagrafico.Zona]">
       <TextObject Name="Text15" Width="94.5" Height="18.9" Text="[[Anagrafico.Zona]]" Font="Arial, 10pt"/>
-      <DataBand Name="Data1" Top="112.52" Width="1047.06" Height="22.68" CanGrow="true" DataSource="Anagrafico">
+      <DataBand Name="Data1" Top="115.95" Width="1047.06" Height="22.68" CanGrow="true" DataSource="Anagrafico">
         <TextObject Name="Text1" Left="9.45" Top="1.89" Width="120" Height="18.9" Text="[Anagrafico.Cognome]" Font="Arial, 10pt"/>
         <TextObject Name="Text3" Left="140" Top="1.89" Width="120" Height="18.9" Text="[Anagrafico.Nome]" Font="Arial, 10pt"/>
         <TextObject Name="Text5" Left="270" Top="1.89" Width="80" Height="18.9" Text="[Anagrafico.Zona]" Font="Arial, 10pt"/>
@@ -50,11 +50,10 @@
         <TextObject Name="Text9" Left="491.4" Width="94.5" Height="18.9" Text="[Anagrafico.DataNascita]" Font="Arial, 10pt"/>
         <TextObject Name="Text11" Left="595.35" Width="94.5" Height="18.9" Text="[Anagrafico.DataIscrizione]" Font="Arial, 10pt"/>
         <TextObject Name="Text13" Left="699.3" Width="94.5" Height="18.9" Text="[Anagrafico.ScadenzaTessera]" Font="Arial, 10pt"/>
-        <LineObject Name="Line1" Left="9.45" Top="18.9" Width="784.35"/>
       </DataBand>
-      <GroupFooterBand Name="GroupFooter1" Top="138.06" Width="1047.06" Height="37.8"/>
+      <GroupFooterBand Name="GroupFooter1" Top="142.63" Width="1047.06" Height="37.8"/>
     </GroupHeaderBand>
-    <PageFooterBand Name="PageFooter1" Top="178.72" Width="1047.06" Height="18.9">
+    <PageFooterBand Name="PageFooter1" Top="184.43" Width="1047.06" Height="18.9">
       <TextObject Name="TextFooter" Left="9.45" Width="1030.05" Height="18.9" Text="Pagina [Page] di [TotalPages#]" HorzAlign="Right" Font="Arial, 9pt"/>
     </PageFooterBand>
   </ReportPage>
