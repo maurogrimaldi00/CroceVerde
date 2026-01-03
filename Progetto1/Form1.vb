@@ -1,16 +1,14 @@
-﻿Imports System.ComponentModel
-Imports System.Data
+﻿Imports System.Data
 Imports System.Drawing
-'Imports Microsoft.Reporting.WinForms
-Imports System.Drawing.Printing
 Imports System.IO
 Imports System.Text
 Imports System.Text.Json
 Imports System.Windows.Forms
 Imports FastReport
-Imports FastReport.Data
 Imports FastReport.Utils
 Imports MySql.Data.MySqlClient
+Imports OfficeOpenXml
+Imports OfficeOpenXml.Style
 
 
 Public Class Form1
@@ -22,12 +20,11 @@ Public Class Form1
     Private Const GridLayoutFileName As String = "gridlayout.json"
     Private highlightEnabled As Boolean = True
 
-    ' Variabili per stampa
-    Private printDoc As PrintDocument
-    Private printDataTable As DataTable
-    Private currentPrintRow As Integer = 0
-
     Private dataScadenzaCache As DateTime = DateTime.MinValue
+    ' ✅ NUOVO: Flag per evitare di riconfigurare la griglia dopo il primo caricamento
+    Private isGridConfigured As Boolean = False
+    ' ✅ NUOVO: Flag per disabilitare il salvataggio automatico durante la configurazione
+    Private isConfiguringGrid As Boolean = False
 
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -72,7 +69,6 @@ Public Class Form1
         dgvAnagrafico.SelectionMode = DataGridViewSelectionMode.FullRowSelect
         dgvAnagrafico.MultiSelect = False
         dgvAnagrafico.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None
-        'dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells
         dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
         dgvAnagrafico.RowHeadersVisible = False
 
@@ -91,6 +87,8 @@ Public Class Form1
 
     ' ✅ NUOVO METODO: Salvataggio automatico del layout
     Private Sub dgvAnagrafico_ColumnWidthChanged(sender As Object, e As DataGridViewColumnEventArgs)
+        ' ✅ NUOVO: Non salvare durante la configurazione iniziale
+        If isConfiguringGrid Then Return
         ' Salva automaticamente dopo un breve ritardo per evitare salvataggi multipli
         Static lastSave As DateTime = DateTime.MinValue
         If (DateTime.Now - lastSave).TotalSeconds > 2 Then
@@ -194,7 +192,11 @@ Public Class Form1
                 End Using
             End Using
 
-            ConfigureGrid()
+            ' ✅ MODIFICATO: Configura la griglia SOLO la prima volta
+            If Not isGridConfigured Then
+                ConfigureGrid()
+                isGridConfigured = True
+            End If
             RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
             ApplyRowHighlight()
             lblStatus.Text = $"Caricati record: {dgvAnagrafico.Rows.Count}"
@@ -230,6 +232,8 @@ Public Class Form1
     ' Configura intestazioni, formati date e colonne checkbox per i tinyint
     Private Sub ConfigureGrid()
         If dgvAnagrafico.DataSource Is Nothing Then Return
+        ' ✅ NUOVO: Disabilita il salvataggio automatico durante la configurazione
+        isConfiguringGrid = True
         Try
             For Each col As DataGridViewColumn In dgvAnagrafico.Columns
                 col.SortMode = DataGridViewColumnSortMode.Automatic
@@ -315,6 +319,9 @@ Public Class Form1
             Catch
             End Try
         Catch ex As Exception
+        Finally
+            ' ✅ NUOVO: Riabilita il salvataggio automatico
+            isConfiguringGrid = False
         End Try
     End Sub
 
@@ -483,7 +490,7 @@ Public Class Form1
 
     Private Sub btnRestoreLayout_Click(sender As Object, e As EventArgs) Handles btnRestoreLayout.Click
         RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
-        ConfigureGrid()
+        'ConfigureGrid()
         ApplyRowHighlight()
         MessageBox.Show("Layout ripristinato.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
@@ -580,6 +587,7 @@ Public Class Form1
                     MessageBox.Show("Record aggiornato con successo.", "Successo", MessageBoxButtons.OK, MessageBoxIcon.Information)
                     LoadData()
                     ClearFields()
+                    'RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
                 End Using
             End Using
         Catch ex As Exception
@@ -783,227 +791,7 @@ Public Class Form1
         Public Property Password As String
     End Class
 
-    Private Function CreaDtAnagrafico() As DataTable
-        Dim dt As New DataTable("dtAnagrafico")
-        dt.Columns.Add("id", GetType(Integer))
-        dt.Columns.Add("ANA_Cognome", GetType(String))
-        dt.Columns.Add("ANA_Nome", GetType(String))
-        dt.Columns.Add("ANA_data_nascita", GetType(DateTime))
-        dt.Columns.Add("ANA_Sesso", GetType(String))
-        dt.Columns.Add("ANA_Qualifica", GetType(String))
-        dt.Columns.Add("ANA_indirizzo", GetType(String))
-        dt.Columns.Add("ANA_civico", GetType(String))
-        dt.Columns.Add("ANA_localita", GetType(String))
-        dt.Columns.Add("ANA_Prov", GetType(String))
-        dt.Columns.Add("ANA_Cap", GetType(String))
-        dt.Columns.Add("ANA_Data_Iscrizione", GetType(DateTime))
-        dt.Columns.Add("ANA_Cellulare", GetType(String))
-        dt.Columns.Add("ANA_Codice_Fiscale", GetType(String))
-        dt.Columns.Add("ANA_Zona", GetType(String))
-        dt.Columns.Add("ANA_Scad_tessera", GetType(DateTime))
-        dt.Columns.Add("ANA_Socio", GetType(Boolean))
-        dt.Columns.Add("ANA_Milite", GetType(Boolean))
-        dt.Columns.Add("ANA_Annullato", GetType(Boolean))
-        dt.Columns.Add("ANA_Assicurato", GetType(Boolean))
-        Return dt
-    End Function
 
-    ' --- Stampa Report ---
-    Private Sub StampaReport()
-        Try
-            printDataTable = CaricaDatiPerReport()
-            If printDataTable.Rows.Count = 0 Then
-                MessageBox.Show("Nessun dato da stampare.", "Informazione", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                Return
-            End If
-
-            printDoc = New PrintDocument()
-            AddHandler printDoc.PrintPage, AddressOf PrintDocument_PrintPage
-
-            Dim pageSetup As New PageSettings()
-            pageSetup.Landscape = True
-            pageSetup.Margins = New Margins(40, 40, 50, 50)
-            printDoc.DefaultPageSettings = pageSetup
-
-            Dim printPreview As New PrintPreviewDialog()
-            printPreview.Document = printDoc
-            printPreview.Size = New Size(1200, 800)
-            printPreview.StartPosition = FormStartPosition.CenterScreen
-            printPreview.ShowIcon = False
-            printPreview.Text = "Anteprima Report Anagrafico"
-
-            currentPrintRow = 0
-            printPreview.ShowDialog()
-        Catch ex As Exception
-            MessageBox.Show($"Errore durante la generazione del report: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
-    End Sub
-
-    Private Sub PrintDocument_PrintPage(sender As Object, e As PrintPageEventArgs)
-        Try
-            Dim yPos As Single = e.MarginBounds.Top
-            Dim xPos As Single = e.MarginBounds.Left
-            Dim titleFont As New Font("Arial", 18, FontStyle.Bold)
-            Dim subtitleFont As New Font("Arial", 10, FontStyle.Italic)
-            Dim headerFont As New Font("Arial", 8, FontStyle.Bold)
-            Dim dataFont As New Font("Arial", 7)
-            Dim lineHeight As Single = dataFont.GetHeight(e.Graphics)
-
-            ' Leggi la data di riferimento dalla tabella tes_scad
-            Dim dataRiferimento As DateTime = GetDataScadenzaRiferimento()
-
-            If currentPrintRow = 0 Then
-                e.Graphics.DrawString("REPORT ANAGRAFICO", titleFont, Brushes.Black, e.MarginBounds.Left, yPos)
-                yPos += titleFont.GetHeight(e.Graphics) * 1.3
-                e.Graphics.DrawString($"Data stampa: {DateTime.Now:dd/MM/yyyy HH:mm} | Totale record: {printDataTable.Rows.Count}", subtitleFont, Brushes.Gray, e.MarginBounds.Left, yPos)
-                yPos += subtitleFont.GetHeight(e.Graphics) * 2
-            End If
-
-            Dim colWidths As New Dictionary(Of String, Single) From {
-                {"id", 30},
-                {"Cognome", 75},
-                {"Nome", 70},
-                {"Sesso", 25},
-                {"Qualifica", 65},
-                {"DataNascita", 65},
-                {"Localita", 90},
-                {"Provincia", 25},
-                {"Cellulare", 75},
-                {"ScadenzaTessera", 70},
-                {"Socio", 30},
-                {"Milite", 30},
-                {"Annullato", 40}
-            }
-
-            Dim colHeaders As New Dictionary(Of String, String) From {
-                {"id", "ID"},
-                {"Cognome", "Cognome"},
-                {"Nome", "Nome"},
-                {"Sesso", "S"},
-                {"Qualifica", "Qualifica"},
-                {"DataNascita", "Nascita"},
-                {"Localita", "Località"},
-                {"Provincia", "Pr"},
-                {"Cellulare", "Cellulare"},
-                {"ScadenzaTessera", "Scad.Tess."},
-                {"Socio", "Socio"},
-                {"Milite", "Milite"},
-                {"Annullato", "Ann."}
-            }
-
-            Dim currentX As Single = xPos
-            Dim headerHeight As Single = lineHeight * 1.8
-            e.Graphics.FillRectangle(New SolidBrush(Color.FromArgb(70, 70, 70)), xPos, yPos, e.MarginBounds.Width, headerHeight)
-
-            For Each col In colWidths
-                Dim headerRect As New RectangleF(currentX + 3, yPos + 3, col.Value - 6, headerHeight - 6)
-                Dim sf As New StringFormat() With {.Alignment = StringAlignment.Near, .LineAlignment = StringAlignment.Center, .Trimming = StringTrimming.EllipsisCharacter}
-                e.Graphics.DrawString(colHeaders(col.Key), headerFont, Brushes.White, headerRect, sf)
-                currentX += col.Value
-            Next
-            yPos += headerHeight + 2
-
-            Dim rowHeight As Single = lineHeight * 1.4
-            While currentPrintRow < printDataTable.Rows.Count AndAlso yPos < e.MarginBounds.Bottom - rowHeight - 20
-                Dim row As DataRow = printDataTable.Rows(currentPrintRow)
-                currentX = xPos
-
-                If currentPrintRow Mod 2 = 0 Then
-                    e.Graphics.FillRectangle(New SolidBrush(Color.FromArgb(248, 248, 248)), xPos, yPos, e.MarginBounds.Width, rowHeight)
-                End If
-
-                Dim isScaduto As Boolean = False
-                If Not String.IsNullOrEmpty(row("ScadenzaTessera").ToString()) Then
-                    Dim dataScad As DateTime
-                    If DateTime.TryParseExact(row("ScadenzaTessera").ToString(), "dd/MM/yyyy", Nothing, Globalization.DateTimeStyles.None, dataScad) Then
-                        ' MODIFICATO: Confronta con dataRiferimento invece di DateTime.Today
-                        If dataScad.Date < dataRiferimento.Date Then
-                            e.Graphics.FillRectangle(New SolidBrush(Color.FromArgb(255, 200, 200)), xPos, yPos, e.MarginBounds.Width, rowHeight)
-                            isScaduto = True
-                        End If
-                    End If
-                End If
-
-                For Each col In colWidths
-                    Dim cellValue As String = If(row(col.Key) IsNot Nothing, row(col.Key).ToString(), "")
-                    Dim cellRect As New RectangleF(currentX + 3, yPos + 2, col.Value - 6, rowHeight - 4)
-                    Dim sf As New StringFormat() With {.Trimming = StringTrimming.EllipsisCharacter, .LineAlignment = StringAlignment.Center}
-                    Dim brush As Brush = If(isScaduto, Brushes.DarkRed, Brushes.Black)
-                    e.Graphics.DrawString(cellValue, dataFont, brush, cellRect, sf)
-                    currentX += col.Value
-                Next
-
-                e.Graphics.DrawLine(New Pen(Color.FromArgb(230, 230, 230), 0.5), xPos, yPos + rowHeight, xPos + e.MarginBounds.Width, yPos + rowHeight)
-                yPos += rowHeight
-                currentPrintRow += 1
-            End While
-
-            Dim pageNumber As Integer = (currentPrintRow \ 40) + 1
-            Dim footerText As String = $"Pagina {pageNumber} | Record visualizzati: {currentPrintRow} di {printDataTable.Rows.Count}"
-            e.Graphics.DrawString(footerText, New Font("Arial", 8), Brushes.Gray, e.MarginBounds.Left, e.MarginBounds.Bottom + 5)
-            e.Graphics.DrawLine(New Pen(Color.Gray, 1), e.MarginBounds.Left, e.MarginBounds.Bottom, e.MarginBounds.Right, e.MarginBounds.Bottom)
-            e.HasMorePages = (currentPrintRow < printDataTable.Rows.Count)
-        Catch ex As Exception
-            MessageBox.Show($"Errore durante la stampa: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            e.HasMorePages = False
-        End Try
-    End Sub
-
-    Private Function CaricaDatiPerReport() As DataTable
-        Dim dt As New DataTable("Anagrafico")
-        dt.Columns.Add("id", GetType(Integer))
-        dt.Columns.Add("Cognome", GetType(String))
-        dt.Columns.Add("Nome", GetType(String))
-        dt.Columns.Add("DataNascita", GetType(String))
-        dt.Columns.Add("Sesso", GetType(String))
-        dt.Columns.Add("Qualifica", GetType(String))
-        dt.Columns.Add("Indirizzo", GetType(String))
-        dt.Columns.Add("Civico", GetType(String))
-        dt.Columns.Add("Localita", GetType(String))
-        dt.Columns.Add("Provincia", GetType(String))
-        dt.Columns.Add("CAP", GetType(String))
-        dt.Columns.Add("DataIscrizione", GetType(String))
-        dt.Columns.Add("Cellulare", GetType(String))
-        dt.Columns.Add("CodiceFiscale", GetType(String))
-        dt.Columns.Add("Zona", GetType(String))
-        dt.Columns.Add("ScadenzaTessera", GetType(String))
-        dt.Columns.Add("Socio", GetType(String))
-        dt.Columns.Add("Milite", GetType(String))
-        dt.Columns.Add("Annullato", GetType(String))
-
-        Using conn As New MySqlConnection(ConnectionString)
-            conn.Open()
-            Dim sql As String = "SELECT id, ANA_Cognome, ANA_Nome, ANA_data_nascita, ANA_Sesso, ANA_Qualifica, ANA_indirizzo, ANA_civico, ANA_localita, ANA_Prov, ANA_Cap, ANA_Data_Iscrizione, ANA_Cellulare, ANA_Codice_Fiscale, ANA_Zona, ANA_Scad_tessera, ANA_Socio, ANA_Milite, ANA_Annullato FROM anagrafico ORDER BY ANA_Cognome, ANA_Nome"
-            Using cmd As New MySqlCommand(sql, conn)
-                Using reader As MySqlDataReader = cmd.ExecuteReader()
-                    While reader.Read()
-                        Dim row As DataRow = dt.NewRow()
-                        row("id") = reader("id")
-                        row("Cognome") = If(IsDBNull(reader("ANA_Cognome")), "", reader("ANA_Cognome"))
-                        row("Nome") = If(IsDBNull(reader("ANA_Nome")), "", reader("ANA_Nome"))
-                        row("DataNascita") = If(IsDBNull(reader("ANA_data_nascita")), "", CDate(reader("ANA_data_nascita")).ToString("dd/MM/yyyy"))
-                        row("Sesso") = If(IsDBNull(reader("ANA_Sesso")), "", reader("ANA_Sesso"))
-                        row("Qualifica") = If(IsDBNull(reader("ANA_Qualifica")), "", reader("ANA_Qualifica"))
-                        row("Indirizzo") = If(IsDBNull(reader("ANA_indirizzo")), "", reader("ANA_indirizzo"))
-                        row("Civico") = If(IsDBNull(reader("ANA_civico")), "", reader("ANA_civico"))
-                        row("Localita") = If(IsDBNull(reader("ANA_localita")), "", reader("ANA_localita"))
-                        row("Provincia") = If(IsDBNull(reader("ANA_Prov")), "", reader("ANA_Prov"))
-                        row("CAP") = If(IsDBNull(reader("ANA_Cap")), "", reader("ANA_Cap"))
-                        row("DataIscrizione") = If(IsDBNull(reader("ANA_Data_Iscrizione")), "", CDate(reader("ANA_Data_Iscrizione")).ToString("dd/MM/yyyy"))
-                        row("Cellulare") = If(IsDBNull(reader("ANA_Cellulare")), "", reader("ANA_Cellulare"))
-                        row("CodiceFiscale") = If(IsDBNull(reader("ANA_Codice_Fiscale")), "", reader("ANA_Codice_Fiscale"))
-                        row("Zona") = If(IsDBNull(reader("ANA_Zona")), "", reader("ANA_Zona"))
-                        row("ScadenzaTessera") = If(IsDBNull(reader("ANA_Scad_tessera")), "", CDate(reader("ANA_Scad_tessera")).ToString("dd/MM/yyyy"))
-                        row("Socio") = If(ToIntOrZero(reader("ANA_Socio")) = 1, "Sì", "No")
-                        row("Milite") = If(ToIntOrZero(reader("ANA_Milite")) = 1, "Sì", "No")
-                        row("Annullato") = If(ToIntOrZero(reader("ANA_Annullato")) = 1, "Sì", "No")
-                        dt.Rows.Add(row)
-                    End While
-                End Using
-            End Using
-        End Using
-        Return dt
-    End Function
 
     Private Function CaricaDatiFiltrati(zona As String, qualifica As String, soloSoci As Boolean, soloMiliti As Boolean) As DataTable
         Dim dt As New DataTable("Anagrafico")
@@ -1099,9 +887,6 @@ Public Class Form1
         Return dt
     End Function
 
-
-
-
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Try
             Using frmFiltri As New FormFiltriReport(ConnectionString)
@@ -1142,23 +927,6 @@ Public Class Form1
         End Try
     End Sub
 
-    ' Funzione helper per costruire la descrizione dei filtri
-    Private Function BuildFiltriDescription(zona As String, qualifica As String,
-                                           soloSoci As Boolean, soloMiliti As Boolean) As String
-        Dim filtri As New List(Of String)
-
-        If zona <> "Tutte" Then filtri.Add($"Zona: {zona}")
-        If qualifica <> "Tutte" Then filtri.Add($"Qualifica: {qualifica}")
-        If soloSoci Then filtri.Add("Solo Soci")
-        If soloMiliti Then filtri.Add("Solo Militi")
-
-        If filtri.Count = 0 Then
-            Return "Nessun filtro applicato"
-        Else
-            Return String.Join(", ", filtri)
-        End If
-    End Function
-
     ' Legge la data di scadenza di riferimento dalla tabella tes_scad
     Private Function GetDataScadenzaRiferimento() As DateTime
 
@@ -1180,5 +948,82 @@ Public Class Form1
         Return DateTime.Today
     End Function
 
+    Private Sub btnExportExcel_Click(sender As Object, e As EventArgs) Handles btnExportExcel.Click
+        ExportGridExcelDialogEPPlus(sender, e)
+    End Sub
+
+    Private Sub ExportGridExcelDialogEPPlus(sender As Object, e As EventArgs)
+        Using sfd As New SaveFileDialog()
+            sfd.Filter = "Excel (*.xlsx)|*.xlsx|Tutti i file (*.*)|*.*"
+            sfd.FileName = "anagrafico.xlsx"
+            If sfd.ShowDialog() = DialogResult.OK Then
+                Try
+                    ExportGridToExcelEPPlus(sfd.FileName)
+                    MessageBox.Show("Esportazione Excel completata.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                Catch ex As Exception
+                    MessageBox.Show($"Errore esportazione Excel: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End Try
+            End If
+        End Using
+    End Sub
+
+    Private Sub ExportGridToExcelEPPlus(path As String)
+
+        Using package As New ExcelPackage()
+            Dim worksheet = package.Workbook.Worksheets.Add("Anagrafico")
+
+            ' Ottieni colonne visibili ordinate
+            Dim cols = dgvAnagrafico.Columns.Cast(Of DataGridViewColumn)() _
+            .Where(Function(c) c.Visible) _
+            .OrderBy(Function(c) c.DisplayIndex) _
+            .ToList()
+
+            ' Header Row - con formattazione
+            For colIndex As Integer = 0 To cols.Count - 1
+                Dim cell = worksheet.Cells(1, colIndex + 1)
+                cell.Value = cols(colIndex).HeaderText
+                cell.Style.Font.Bold = True
+                cell.Style.Fill.PatternType = ExcelFillStyle.Solid
+                cell.Style.Fill.BackgroundColor.SetColor(Color.LightGray)
+                cell.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center
+            Next
+
+            ' Data Rows
+            Dim rowIndex As Integer = 2
+            For Each row As DataGridViewRow In dgvAnagrafico.Rows
+                If Not row.IsNewRow Then
+                    For colIndex As Integer = 0 To cols.Count - 1
+                        Dim col = cols(colIndex)
+                        Dim v = row.Cells(col.Name).Value
+                        Dim cell = worksheet.Cells(rowIndex, colIndex + 1)
+
+                        If v IsNot Nothing AndAlso Not IsDBNull(v) Then
+                            If TypeOf v Is DateTime Then
+                                cell.Value = CDate(v)
+                                cell.Style.Numberformat.Format = "dd/MM/yyyy"
+                            ElseIf TypeOf v Is Integer Then
+                                Dim intVal As Integer = CInt(v)
+                                If intVal = 0 OrElse intVal = 1 Then
+                                    cell.Value = If(intVal = 1, "Sì", "No")
+                                Else
+                                    cell.Value = v
+                                End If
+                            ElseIf TypeOf v Is Boolean Then
+                                cell.Value = If(CBool(v), "Sì", "No")
+                            Else
+                                cell.Value = v
+                            End If
+                        End If
+                    Next
+                    rowIndex += 1
+                End If
+            Next
+
+            worksheet.Cells(worksheet.Dimension.Address).AutoFitColumns()
+
+            Dim fileInfo As New FileInfo(path)
+            package.SaveAs(fileInfo)
+        End Using
+    End Sub
 
 End Class

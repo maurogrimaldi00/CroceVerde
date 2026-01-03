@@ -102,11 +102,13 @@ Partial Class Form1
         Label16 = New Label()
         Label17 = New Label()
         Label21 = New Label()
+        btnExportExcel = New Button()
         CType(dgvAnagrafico, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
         ' 
         ' dgvAnagrafico
         ' 
+        dgvAnagrafico.AllowUserToResizeRows = False
         dgvAnagrafico.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvAnagrafico.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
         dgvAnagrafico.Location = New Point(12, 12)
@@ -267,7 +269,7 @@ Partial Class Form1
         ' 
         ' cmbZona
         ' 
-        cmbZona.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(255))
+        cmbZona.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(128))
         cmbZona.DropDownStyle = ComboBoxStyle.DropDownList
         cmbZona.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         cmbZona.FormattingEnabled = True
@@ -335,56 +337,64 @@ Partial Class Form1
         ' 
         ' btnAdd
         ' 
+        btnAdd.BackColor = Color.FromArgb(CByte(128), CByte(255), CByte(128))
+        btnAdd.Font = New Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnAdd.Location = New Point(826, 490)
         btnAdd.Name = "btnAdd"
         btnAdd.Size = New Size(95, 30)
         btnAdd.TabIndex = 21
         btnAdd.Text = "Aggiungi"
-        btnAdd.UseVisualStyleBackColor = True
+        btnAdd.UseVisualStyleBackColor = False
         btnAdd.UseWaitCursor = True
         ' 
         ' btnUpdate
         ' 
+        btnUpdate.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(255))
+        btnUpdate.Font = New Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnUpdate.Location = New Point(931, 490)
         btnUpdate.Name = "btnUpdate"
         btnUpdate.Size = New Size(95, 30)
         btnUpdate.TabIndex = 22
         btnUpdate.Text = "Aggiorna"
-        btnUpdate.UseVisualStyleBackColor = True
+        btnUpdate.UseVisualStyleBackColor = False
         btnUpdate.UseWaitCursor = True
         ' 
         ' btnDelete
         ' 
+        btnDelete.BackColor = Color.FromArgb(CByte(255), CByte(128), CByte(128))
         btnDelete.Location = New Point(826, 526)
         btnDelete.Name = "btnDelete"
         btnDelete.Size = New Size(95, 30)
         btnDelete.TabIndex = 23
         btnDelete.Text = "Elimina"
-        btnDelete.UseVisualStyleBackColor = True
+        btnDelete.UseVisualStyleBackColor = False
         btnDelete.UseWaitCursor = True
         ' 
         ' btnRefresh
         ' 
+        btnRefresh.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(192))
         btnRefresh.Location = New Point(931, 526)
         btnRefresh.Name = "btnRefresh"
         btnRefresh.Size = New Size(95, 30)
         btnRefresh.TabIndex = 24
         btnRefresh.Text = "Ricarica"
-        btnRefresh.UseVisualStyleBackColor = True
+        btnRefresh.UseVisualStyleBackColor = False
         btnRefresh.UseWaitCursor = True
         ' 
         ' btnClear
         ' 
+        btnClear.BackColor = Color.Silver
         btnClear.Location = New Point(826, 454)
         btnClear.Name = "btnClear"
         btnClear.Size = New Size(200, 30)
         btnClear.TabIndex = 25
         btnClear.Text = "Pulisci campi"
-        btnClear.UseVisualStyleBackColor = True
+        btnClear.UseVisualStyleBackColor = False
         btnClear.UseWaitCursor = True
         ' 
         ' txtSearch
         ' 
+        txtSearch.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(192))
         txtSearch.Location = New Point(12, 444)
         txtSearch.Name = "txtSearch"
         txtSearch.Size = New Size(620, 27)
@@ -393,12 +403,15 @@ Partial Class Form1
         ' 
         ' btnSearch
         ' 
+        btnSearch.BackColor = Color.FromArgb(CByte(255), CByte(192), CByte(255))
+        btnSearch.Font = New Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         btnSearch.Location = New Point(642, 444)
         btnSearch.Name = "btnSearch"
         btnSearch.Size = New Size(130, 27)
         btnSearch.TabIndex = 27
-        btnSearch.Text = "Cerca"
-        btnSearch.UseVisualStyleBackColor = True
+        btnSearch.Text = "Ricerche"
+        btnSearch.TextImageRelation = TextImageRelation.TextAboveImage
+        btnSearch.UseVisualStyleBackColor = False
         btnSearch.UseWaitCursor = True
         ' 
         ' lblStatus
@@ -414,52 +427,57 @@ Partial Class Form1
         ' 
         ' btnExportCsv
         ' 
-        btnExportCsv.Location = New Point(826, 598)
+        btnExportCsv.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(128))
+        btnExportCsv.Location = New Point(1032, 493)
         btnExportCsv.Name = "btnExportCsv"
         btnExportCsv.Size = New Size(200, 27)
         btnExportCsv.TabIndex = 30
         btnExportCsv.Text = "Esporta CSV"
-        btnExportCsv.UseVisualStyleBackColor = True
+        btnExportCsv.UseVisualStyleBackColor = False
         btnExportCsv.UseWaitCursor = True
         ' 
         ' btnSaveLayout
         ' 
-        btnSaveLayout.Location = New Point(826, 631)
+        btnSaveLayout.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(255))
+        btnSaveLayout.Location = New Point(826, 598)
         btnSaveLayout.Name = "btnSaveLayout"
         btnSaveLayout.Size = New Size(200, 27)
         btnSaveLayout.TabIndex = 31
         btnSaveLayout.Text = "Salva layout"
-        btnSaveLayout.UseVisualStyleBackColor = True
+        btnSaveLayout.UseVisualStyleBackColor = False
         btnSaveLayout.UseWaitCursor = True
         ' 
         ' btnRestoreLayout
         ' 
-        btnRestoreLayout.Location = New Point(826, 664)
+        btnRestoreLayout.BackColor = Color.FromArgb(CByte(255), CByte(192), CByte(192))
+        btnRestoreLayout.Location = New Point(826, 636)
         btnRestoreLayout.Name = "btnRestoreLayout"
         btnRestoreLayout.Size = New Size(200, 29)
         btnRestoreLayout.TabIndex = 32
         btnRestoreLayout.Text = "Ripristina layout"
-        btnRestoreLayout.UseVisualStyleBackColor = True
+        btnRestoreLayout.UseVisualStyleBackColor = False
         btnRestoreLayout.UseWaitCursor = True
         ' 
         ' btnToggleHighlight
         ' 
-        btnToggleHighlight.Location = New Point(826, 699)
+        btnToggleHighlight.BackColor = Color.FromArgb(CByte(192), CByte(192), CByte(0))
+        btnToggleHighlight.Location = New Point(826, 564)
         btnToggleHighlight.Name = "btnToggleHighlight"
         btnToggleHighlight.Size = New Size(200, 27)
         btnToggleHighlight.TabIndex = 33
         btnToggleHighlight.Text = "Tessere Scadute ON/OFF"
-        btnToggleHighlight.UseVisualStyleBackColor = True
+        btnToggleHighlight.UseVisualStyleBackColor = False
         btnToggleHighlight.UseWaitCursor = True
         ' 
         ' Button1
         ' 
-        Button1.Location = New Point(826, 562)
+        Button1.BackColor = Color.FromArgb(CByte(255), CByte(192), CByte(128))
+        Button1.Location = New Point(1032, 454)
         Button1.Name = "Button1"
         Button1.Size = New Size(200, 33)
         Button1.TabIndex = 37
         Button1.Text = "Stampe"
-        Button1.UseVisualStyleBackColor = True
+        Button1.UseVisualStyleBackColor = False
         Button1.UseWaitCursor = True
         ' 
         ' Label9
@@ -638,9 +656,21 @@ Partial Class Form1
         Label21.Text = "Zona"
         Label21.UseWaitCursor = True
         ' 
+        ' btnExportExcel
+        ' 
+        btnExportExcel.BackColor = Color.FromArgb(CByte(128), CByte(255), CByte(128))
+        btnExportExcel.Location = New Point(1032, 528)
+        btnExportExcel.Name = "btnExportExcel"
+        btnExportExcel.Size = New Size(200, 31)
+        btnExportExcel.TabIndex = 62
+        btnExportExcel.Text = "Esporta Excel xlsx"
+        btnExportExcel.UseVisualStyleBackColor = False
+        btnExportExcel.UseWaitCursor = True
+        ' 
         ' Form1
         ' 
         ClientSize = New Size(1501, 760)
+        Controls.Add(btnExportExcel)
         Controls.Add(Label21)
         Controls.Add(Label17)
         Controls.Add(Label16)
@@ -718,5 +748,6 @@ Partial Class Form1
     Friend WithEvents Label16 As Label
     Friend WithEvents Label17 As Label
     Friend WithEvents Label21 As Label
+    Friend WithEvents btnExportExcel As Button
 
 End Class
