@@ -57,6 +57,24 @@ Public Class Form1
         Me.UseWaitCursor = False
         Me.Cursor = Cursors.Default
         Me.Refresh()
+
+        ' Applica permessi basati su ruolo
+        ApplyUserPermissions()
+    End Sub
+
+    Private Sub ApplyUserPermissions()
+        Dim canEdit As Boolean = UserSession.CanEdit()
+
+        ' Disabilita pulsanti modifica per utenti readonly
+        btnAdd.Enabled = canEdit
+        btnUpdate.Enabled = canEdit
+        btnDelete.Enabled = canEdit
+
+        If Not canEdit Then
+            btnAdd.BackColor = Color.Gray
+            btnUpdate.BackColor = Color.Gray
+            btnDelete.BackColor = Color.Gray
+        End If
     End Sub
 
     ' --- Migliorie visuali e comportamentali per dgvAnagrafico ---

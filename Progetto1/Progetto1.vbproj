@@ -3,10 +3,10 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
-    <StartupObject>Progetto1.My.MyApplication</StartupObject>
+    <StartupObject>Progetto1.Program</StartupObject>
     <UseWindowsForms>true</UseWindowsForms>
 	<EnableApplicationFramework>false</EnableApplicationFramework>
-    <MyType>WindowsForms</MyType>
+    <MyType>WindowsFormsWithCustomSubMain</MyType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,11 +32,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>DsAnagrafico.xsd</DependentUpon>
     </Compile>
-    <Compile Update="My Project\Application.Designer.vb">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Application.myapp</DependentUpon>
-    </Compile>
     <Compile Update="My Project\Resources.Designer.vb">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -56,10 +51,6 @@
     <None Update="DsAnagrafico.xsd">
       <Generator>MSDataSetGenerator</Generator>
       <LastGenOutput>DsAnagrafico.Designer.vb</LastGenOutput>
-    </None>
-    <None Update="My Project\Application.myapp">
-      <Generator>MyApplicationCodeGenerator</Generator>
-      <LastGenOutput>Application.Designer.vb</LastGenOutput>
     </None>
     <None Update="Stampa1.frx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
