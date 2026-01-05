@@ -27,7 +27,7 @@ Public Class FormMain
             Me.StartPosition = FormStartPosition.CenterScreen
 
             ' Carica la connessione
-            connectionString = ReadConnectionString()
+            connectionString = DbConfigHelper.ReadConnectionString()
 
             System.Diagnostics.Debug.WriteLine("FormMain.New() - Fine")
         Catch ex As Exception
@@ -358,6 +358,17 @@ Public Class FormMain
         MessageBox.Show("Funzione Impostazioni in sviluppo", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 
+    Private Sub InitializeComponent()
+        SuspendLayout()
+        ' 
+        ' FormMain
+        ' 
+        ClientSize = New Size(282, 253)
+        Name = "FormMain"
+        ResumeLayout(False)
+
+    End Sub
+
     Private Sub btnLogout_Click(sender As Object, e As EventArgs)
         Dim result = MessageBox.Show("Vuoi disconnetterti?", "Logout", MessageBoxButtons.YesNo, MessageBoxIcon.Question)
         If result = DialogResult.Yes Then
@@ -365,22 +376,6 @@ Public Class FormMain
             Me.Close()
         End If
     End Sub
-
-    Private Function ReadConnectionString() As String
-        Dim configPath = Path.Combine(Application.StartupPath, "dbconfig.json")
-        Try
-            If File.Exists(configPath) Then
-                Dim json = File.ReadAllText(configPath)
-                Dim cfg = JsonSerializer.Deserialize(Of DbConfig)(json)
-                If cfg IsNot Nothing Then
-                    Return $"Server={cfg.Server};Database={cfg.Database};Uid={cfg.User};Pwd={cfg.Password};"
-                End If
-            End If
-        Catch ex As Exception
-            System.Diagnostics.Debug.WriteLine($"Errore ReadConnectionString: {ex.Message}")
-        End Try
-        Return "Server=localhost;Database=db_01;Uid=root;Pwd=Mauro1963?;"
-    End Function
 
     Private Class DbConfig
         Public Property Server As String

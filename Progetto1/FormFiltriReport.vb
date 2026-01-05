@@ -25,12 +25,26 @@ Public Class FormFiltriReport
     <DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)>
     Public Property SoloMiliti As Boolean
 
+    ' Costruttore senza parametri per il designer
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    ' Costruttore con parametri per l'uso normale
     Public Sub New(connectionString As String)
         InitializeComponent()
         _connectionString = connectionString
     End Sub
 
     Private Sub FormFiltriReport_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Verifica che la stringa di connessione sia stata impostata
+        If String.IsNullOrEmpty(_connectionString) Then
+            MessageBox.Show("Errore: Connection string non impostata.", "Errore",
+                          MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Me.Close()
+            Return
+        End If
+
         CaricaZone()
         CaricaQualifiche()
     End Sub
@@ -103,7 +117,7 @@ Public Class FormFiltriReport
 
     Private Sub btnOK_Click(sender As Object, e As EventArgs) Handles btnOK.Click
         ' Salva i valori selezionati
-        ' ? CORRETTO: Gestisce correttamente DBNull.Value
+        ' CORRETTO: Gestisce correttamente DBNull.Value
         If cmbZonaFiltro.SelectedValue Is Nothing OrElse IsDBNull(cmbZonaFiltro.SelectedValue) Then
             ZonaSelezionata = ""
         Else

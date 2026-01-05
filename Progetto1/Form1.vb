@@ -37,7 +37,7 @@ Public Class Form1
         Catch ex As Exception
         End Try
 
-        ConnectionString = ReadConnectionString()
+        ConnectionString = DbConfigHelper.ReadConnectionString()
         dataScadenzaCache = GetDataScadenzaRiferimento()
         bsAnagrafico = New BindingSource()
         EnhanceGridLookAndFeel()
@@ -149,21 +149,23 @@ Public Class Form1
         Try
             Using conn As New MySqlConnection(ConnectionString)
                 conn.Open()
-                ' MODIFICATO: Aggiunto LEFT JOIN con zone per la ricerca, ma selezioniamo solo le colonne originali
-                Dim sql As String = "SELECT a.id, a.ANA_Cognome, a.ANA_Nome, a.ANA_data_nascita, a.ANA_Sesso, a.ANA_Qualifica, " &
-                               "a.ANA_indirizzo, a.ANA_civico, a.ANA_localita, a.ANA_Prov, a.ANA_Cap, a.ANA_Data_Iscrizione, a.ANA_Cellulare, " &
-                               "a.ANA_Codice_Fiscale, a.ANA_Zona, a.ANA_Scad_tessera, a.ANA_Socio, a.ANA_Milite, " &
-                               "a.ANA_Annullato, a.ANA_Assicurato " &
-                               "FROM anagrafico a " &
-                               "LEFT JOIN zone z ON a.ANA_Zona = z.Cod_zona"
+                Dim sql As String = "SELECT a.id, a.ANA_Cognome, a.ANA_Nome, a.ANA_data_nascita, a.ANA_Sesso, " &
+                           "a.ANA_Qualifica, q.Desc_qualifica AS Qualifica_Desc, " &
+                           "a.ANA_indirizzo, a.ANA_civico, a.ANA_localita, a.ANA_Prov, a.ANA_Cap, " &
+                           "a.ANA_Data_Iscrizione, a.ANA_Cellulare, a.ANA_Codice_Fiscale, " &
+                           "a.ANA_Zona, a.ANA_Scad_tessera, a.ANA_Socio, a.ANA_Milite, " &
+                           "a.ANA_Annullato, a.ANA_Assicurato " &
+                           "FROM anagrafico a " &
+                           "LEFT JOIN zone z ON a.ANA_Zona = z.Cod_zona " &
+                           "LEFT JOIN qualifica q ON a.ANA_Qualifica = q.Cod_qualifica"
 
                 If Not String.IsNullOrWhiteSpace(filter) Then
-                    ' MODIFICATO: Aggiunta ricerca su codice e descrizione zona
                     sql &= " WHERE a.ANA_Cognome LIKE @f " &
                        "OR a.ANA_Nome LIKE @f " &
                        "OR a.ANA_Codice_Fiscale LIKE @f " &
                        "OR a.ANA_Cellulare LIKE @f " &
                        "OR a.ANA_Qualifica LIKE @f " &
+                       "OR q.Desc_qualifica LIKE @f " &
                        "OR z.Cod_zona LIKE @f " &
                        "OR z.Desc_zona LIKE @f"
                 End If
@@ -176,18 +178,25 @@ Public Class Form1
                     Dim da As New MySqlDataAdapter(cmd)
                     Dim dt As New DataTable()
                     da.Fill(dt)
-                    bsAnagrafico.DataSource = dt
-                    dgvAnagrafico.DataSource = bsAnagrafico
+                    ' Sospendi Layout durante il binding
+                    dgvAnagrafico.SuspendLayout()
+                    Try
+                        bsAnagrafico.DataSource = dt
+                        dgvAnagrafico.DataSource = bsAnagrafico
+                    Finally
+                        dgvAnagrafico.ResumeLayout()
+                    End Try
+
                 End Using
             End Using
 
-            ' ✅ MODIFICATO: Configura la griglia SOLO la prima volta
+            ' Configura la griglia SOLO la prima volta
             If Not isGridConfigured Then
                 isConfiguringGrid = True
                 ConfigureGrid()
                 isConfiguringGrid = False
 
-                ' ✅ MODIFICATO: Ripristina il layout DOPO la configurazione (solo la prima volta)
+                ' Ripristina il layout DOPO la configurazione (solo la prima volta)
                 RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
                 isGridConfigured = True
             End If
@@ -227,14 +236,15 @@ Public Class Form1
         If dgvAnagrafico.DataSource Is Nothing Then Return
 
         Try
-            ' ✅ NON impostare più AutoResizeColumns per mantenere le larghezze dell'utente
+            ' Disabilita TUTTI gli eventi durante la configurazione
+            RemoveHandler dgvAnagrafico.ColumnWidthChanged, AddressOf dgvAnagrafico_ColumnWidthChanged
+            RemoveHandler dgvAnagrafico.ColumnDisplayIndexChanged, AddressOf dgvAnagrafico_ColumnDisplayIndexChanged
+
             For Each col As DataGridViewColumn In dgvAnagrafico.Columns
                 col.SortMode = DataGridViewColumnSortMode.Automatic
                 col.Resizable = DataGridViewTriState.True
-                ' ✅ NON impostare Width qui - lascia che sia RestoreGridLayout a farlo
             Next
 
-            ' ... (resto del codice invariato per intestazioni e checkbox) ...
             If dgvAnagrafico.Columns.Contains("id") Then dgvAnagrafico.Columns("id").HeaderText = "ID"
             If dgvAnagrafico.Columns.Contains("ANA_Cognome") Then dgvAnagrafico.Columns("ANA_Cognome").HeaderText = "Cognome"
             If dgvAnagrafico.Columns.Contains("ANA_Nome") Then dgvAnagrafico.Columns("ANA_Nome").HeaderText = "Nome"
@@ -243,7 +253,12 @@ Public Class Form1
                 dgvAnagrafico.Columns("ANA_data_nascita").DefaultCellStyle.Format = "dd/MM/yyyy"
             End If
             If dgvAnagrafico.Columns.Contains("ANA_Sesso") Then dgvAnagrafico.Columns("ANA_Sesso").HeaderText = "Sesso"
-            If dgvAnagrafico.Columns.Contains("ANA_Qualifica") Then dgvAnagrafico.Columns("ANA_Qualifica").HeaderText = "Qualifica"
+            If dgvAnagrafico.Columns.Contains("ANA_Qualifica") Then
+                dgvAnagrafico.Columns("ANA_Qualifica").Visible = False ' Nascondi il codice
+            End If
+            If dgvAnagrafico.Columns.Contains("Qualifica_Desc") Then
+                dgvAnagrafico.Columns("Qualifica_Desc").HeaderText = "Qualifica"
+            End If
             If dgvAnagrafico.Columns.Contains("ANA_indirizzo") Then dgvAnagrafico.Columns("ANA_indirizzo").HeaderText = "Indirizzo"
             If dgvAnagrafico.Columns.Contains("ANA_civico") Then dgvAnagrafico.Columns("ANA_civico").HeaderText = "Civico"
             If dgvAnagrafico.Columns.Contains("ANA_localita") Then dgvAnagrafico.Columns("ANA_localita").HeaderText = "Località"
@@ -261,6 +276,7 @@ Public Class Form1
             End If
             If dgvAnagrafico.Columns.Contains("ANA_Cellulare") Then dgvAnagrafico.Columns("ANA_Cellulare").HeaderText = "Cellulare"
 
+            '  Converti le colonne checkbox PRIMA di riordinare
             Dim tinyCols As New Dictionary(Of String, String) From {
             {"ANA_Socio", "Socio"},
             {"ANA_Milite", "Milite"},
@@ -273,11 +289,15 @@ Public Class Form1
                 Dim header = kvp.Value
                 If dgvAnagrafico.Columns.Contains(colName) Then
                     Dim idx = dgvAnagrafico.Columns(colName).Index
+                    Dim originalWidth = dgvAnagrafico.Columns(colName).Width '  SALVA larghezza originale
+                    Dim originalDisplayIndex = dgvAnagrafico.Columns(colName).DisplayIndex ' ✅ SALVA ordine
+
                     dgvAnagrafico.Columns.RemoveAt(idx)
                     Dim chk As New DataGridViewCheckBoxColumn()
                     chk.Name = colName
                     chk.DataPropertyName = colName
                     chk.HeaderText = header
+                    chk.Width = originalWidth ' RIPRISTINA larghezza
                     chk.TrueValue = 1
                     chk.FalseValue = 0
                     If colName = "ANA_Assicurato" Then
@@ -288,25 +308,43 @@ Public Class Form1
                     End If
                     chk.SortMode = DataGridViewColumnSortMode.Automatic
                     dgvAnagrafico.Columns.Insert(idx, chk)
+                    chk.DisplayIndex = originalDisplayIndex ' RIPRISTINA ordine
                 End If
             Next
 
-            ' Riordina le colonne: Sesso subito dopo Nome
+
+            '  Riordina le colonne SENZA cambiare le altre
             If dgvAnagrafico.Columns.Contains("ANA_Nome") AndAlso dgvAnagrafico.Columns.Contains("ANA_Sesso") Then
                 Dim nomeIndex As Integer = dgvAnagrafico.Columns("ANA_Nome").DisplayIndex
-                dgvAnagrafico.Columns("ANA_Sesso").DisplayIndex = nomeIndex + 1
+                Dim targetIndex As Integer = nomeIndex + 1
 
-                For Each col As DataGridViewColumn In dgvAnagrafico.Columns
-                    If col.Name <> "ANA_Sesso" AndAlso col.Name <> "ANA_Nome" Then
-                        If col.DisplayIndex > nomeIndex AndAlso col.DisplayIndex <= nomeIndex + 1 Then
-                            col.DisplayIndex += 1
+                ' Sposta solo "Sesso" se non è già nella posizione corretta
+                If dgvAnagrafico.Columns("ANA_Sesso").DisplayIndex <> targetIndex Then
+                    ' Salva tutte le posizioni attuali
+                    Dim displayIndexes As New Dictionary(Of String, Integer)
+                    For Each col As DataGridViewColumn In dgvAnagrafico.Columns
+                        displayIndexes(col.Name) = col.DisplayIndex
+                    Next
+
+                    ' Sposta Sesso
+                    dgvAnagrafico.Columns("ANA_Sesso").DisplayIndex = targetIndex
+
+                    ' Aggiusta le altre colonne solo se necessario
+                    For Each col As DataGridViewColumn In dgvAnagrafico.Columns
+                        If col.Name <> "ANA_Sesso" AndAlso col.Name <> "ANA_Nome" Then
+                            Dim oldIndex = displayIndexes(col.Name)
+                            If oldIndex >= targetIndex AndAlso oldIndex < dgvAnagrafico.Columns("ANA_Sesso").DisplayIndex Then
+                                ' Solo se serve spostare
+                                If col.DisplayIndex <> oldIndex + 1 Then
+                                    col.DisplayIndex = oldIndex + 1
+                                End If
+                            End If
                         End If
-                    End If
-                Next
+                    Next
+                End If
             End If
 
             Try
-                ' ✅ RIMOSSO: dgvAnagrafico.AutoResizeColumns()
                 If dgvAnagrafico.Columns.Contains("ANA_Cognome") Then
                     bsAnagrafico.Sort = "ANA_Cognome ASC, ANA_Nome ASC"
                 End If
@@ -314,6 +352,11 @@ Public Class Form1
             End Try
         Catch ex As Exception
             ' Gestisci eventuali errori
+            System.Diagnostics.Debug.WriteLine($"Errore ConfigureGrid: {ex.Message}")
+        Finally
+            '  Riattiva gli eventi DOPO la configurazione
+            AddHandler dgvAnagrafico.ColumnWidthChanged, AddressOf dgvAnagrafico_ColumnWidthChanged
+            AddHandler dgvAnagrafico.ColumnDisplayIndexChanged, AddressOf dgvAnagrafico_ColumnDisplayIndexChanged
         End Try
     End Sub
 
@@ -483,19 +526,38 @@ Public Class Form1
     Private Sub RestoreGridLayout(path As String)
         Try
             If Not File.Exists(path) Then Return
+
             Dim json = File.ReadAllText(path, Encoding.UTF8)
             Dim colsDef = JsonSerializer.Deserialize(Of List(Of ColumnLayout))(json)
             If colsDef Is Nothing Then Return
 
-            For Each def In colsDef
-                If dgvAnagrafico.Columns.Contains(def.Name) Then
-                    Dim c = dgvAnagrafico.Columns(def.Name)
-                    c.DisplayIndex = Math.Max(0, Math.Min(def.DisplayIndex, dgvAnagrafico.ColumnCount - 1))
-                    c.Width = Math.Max(20, def.Width)
-                    c.Visible = def.Visible
-                End If
-            Next
-        Catch
+            ' ✅ MODIFICATO: Sospendi layout durante il ripristino
+            dgvAnagrafico.SuspendLayout()
+            Try
+                ' Prima passa: imposta solo Width e Visible
+                For Each def In colsDef
+                    If dgvAnagrafico.Columns.Contains(def.Name) Then
+                        Dim c = dgvAnagrafico.Columns(def.Name)
+                        c.Width = Math.Max(20, def.Width)
+                        c.Visible = def.Visible
+                    End If
+                Next
+
+                ' Seconda passa: imposta DisplayIndex (per evitare conflitti)
+                For Each def In colsDef
+                    If dgvAnagrafico.Columns.Contains(def.Name) Then
+                        Dim c = dgvAnagrafico.Columns(def.Name)
+                        Dim targetIndex = Math.Max(0, Math.Min(def.DisplayIndex, dgvAnagrafico.ColumnCount - 1))
+                        If c.DisplayIndex <> targetIndex Then
+                            c.DisplayIndex = targetIndex
+                        End If
+                    End If
+                Next
+            Finally
+                dgvAnagrafico.ResumeLayout()
+            End Try
+        Catch ex As Exception
+            System.Diagnostics.Debug.WriteLine($"Errore RestoreGridLayout: {ex.Message}")
         End Try
     End Sub
 
@@ -544,7 +606,18 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Cellulare", If(String.IsNullOrWhiteSpace(txtCellulare.Text), DBNull.Value, txtCellulare.Text.Trim()))
                     cmd.Parameters.AddWithValue("@CF", If(String.IsNullOrWhiteSpace(txtCF.Text), DBNull.Value, txtCF.Text.Trim().ToUpper()))
                     cmd.Parameters.AddWithValue("@Zona", If(cmbZona.SelectedValue Is Nothing, DBNull.Value, cmbZona.SelectedValue))
-                    cmd.Parameters.AddWithValue("@ScadTessera", dtpScadTessera.Value.Date)
+                    Dim dataScadenza As DateTime
+                    If String.IsNullOrWhiteSpace(txtScadTessera.Text) Then
+                        cmd.Parameters.AddWithValue("@ScadTessera", DBNull.Value)
+                    ElseIf DateTime.TryParseExact(txtScadTessera.Text, "dd/MM/yyyy",
+                                              Globalization.CultureInfo.InvariantCulture,
+                                              Globalization.DateTimeStyles.None,
+                                              dataScadenza) Then
+                        cmd.Parameters.AddWithValue("@ScadTessera", dataScadenza.Date)
+                    Else
+                        ' Se il parsing fallisce, usa la data odierna
+                        cmd.Parameters.AddWithValue("@ScadTessera", DateTime.Today)
+                    End If
                     cmd.Parameters.AddWithValue("@Socio", If(chkSocio.Checked, 1, 0))
                     cmd.Parameters.AddWithValue("@Milite", If(chkMilite.Checked, 1, 0))
                     cmd.Parameters.AddWithValue("@Annullato", If(chkAnnullato.Checked, 1, 0))
@@ -591,7 +664,18 @@ Public Class Form1
                     cmd.Parameters.AddWithValue("@Cellulare", If(String.IsNullOrWhiteSpace(txtCellulare.Text), DBNull.Value, txtCellulare.Text.Trim()))
                     cmd.Parameters.AddWithValue("@CF", If(String.IsNullOrWhiteSpace(txtCF.Text), DBNull.Value, txtCF.Text.Trim().ToUpper()))
                     cmd.Parameters.AddWithValue("@Zona", If(cmbZona.SelectedValue Is Nothing, DBNull.Value, cmbZona.SelectedValue))
-                    cmd.Parameters.AddWithValue("@ScadTessera", dtpScadTessera.Value.Date)
+                    Dim dataScadenza As DateTime
+                    If String.IsNullOrWhiteSpace(txtScadTessera.Text) Then
+                        cmd.Parameters.AddWithValue("@ScadTessera", DBNull.Value)
+                    ElseIf DateTime.TryParseExact(txtScadTessera.Text, "dd/MM/yyyy",
+                                              Globalization.CultureInfo.InvariantCulture,
+                                              Globalization.DateTimeStyles.None,
+                                              dataScadenza) Then
+                        cmd.Parameters.AddWithValue("@ScadTessera", dataScadenza.Date)
+                    Else
+                        ' Se il parsing fallisce, usa la data odierna
+                        cmd.Parameters.AddWithValue("@ScadTessera", DateTime.Today)
+                    End If
                     cmd.Parameters.AddWithValue("@Socio", If(chkSocio.Checked, 1, 0))
                     cmd.Parameters.AddWithValue("@Milite", If(chkMilite.Checked, 1, 0))
                     cmd.Parameters.AddWithValue("@Annullato", If(chkAnnullato.Checked, 1, 0))
@@ -660,12 +744,13 @@ Public Class Form1
         txtLocalita.Clear()
         txtProv.Clear()
         txtCap.Clear()
-        dtpDataIscrizione.Checked = False
-        dtpDataIscrizione.Value = DateTime.Today
+        ' ✅ MODIFICATO: Reset colore tessera
+        txtScadTessera.Text = GetDataScadenzaRiferimento().ToString("dd/MM/yyyy")
+        txtScadTessera.BackColor = Color.FromArgb(255, 255, 192) ' Giallo chiaro (default)
+        txtScadTessera.ForeColor = Color.Black
         txtCellulare.Clear()
         txtCF.Clear()
         cmbZona.SelectedIndex = -1
-        dtpScadTessera.Value = GetDataScadenzaRiferimento()
         chkSocio.Checked = False
         chkMilite.Checked = False
         chkAnnullato.Checked = False
@@ -703,10 +788,26 @@ Public Class Form1
                 cmbSesso.SelectedIndex = -1
             End If
 
-            ' MODIFICATO: Gestione ComboBox Qualifica
+            ' ✅ CORRETTO: Gestione ComboBox Qualifica
             Dim qualifica = row.Cells("ANA_Qualifica").Value
             If qualifica IsNot Nothing AndAlso Not IsDBNull(qualifica) Then
-                cmbQualifica.SelectedValue = qualifica
+                Dim qualificaStr As String = qualifica.ToString().Trim()
+
+                ' Cerca il valore nel ComboBox
+                If cmbQualifica.DataSource IsNot Nothing Then
+                    Dim dt As DataTable = CType(cmbQualifica.DataSource, DataTable)
+                    Dim foundRow As DataRow = dt.AsEnumerable().FirstOrDefault(Function(r) _
+                    Not IsDBNull(r("Cod_qualifica")) AndAlso
+                    r("Cod_qualifica").ToString().Trim().Equals(qualificaStr, StringComparison.OrdinalIgnoreCase))
+
+                    If foundRow IsNot Nothing Then
+                        cmbQualifica.SelectedValue = foundRow("Cod_qualifica")
+                    Else
+                        cmbQualifica.SelectedIndex = -1
+                    End If
+                Else
+                    cmbQualifica.SelectedIndex = -1
+                End If
             Else
                 cmbQualifica.SelectedIndex = -1
             End If
@@ -728,18 +829,42 @@ Public Class Form1
             txtCellulare.Text = Convert.ToString(row.Cells("ANA_Cellulare").Value)
             txtCF.Text = Convert.ToString(row.Cells("ANA_Codice_Fiscale").Value)
 
+            ' ✅ CORRETTO: Gestione ComboBox Zona con DisplayText
             Dim zona = row.Cells("ANA_Zona").Value
             If zona IsNot Nothing AndAlso Not IsDBNull(zona) Then
-                cmbZona.SelectedValue = zona
+                Dim zonaStr As String = zona.ToString().Trim()
+
+                ' Cerca il valore nel ComboBox
+                If cmbZona.DataSource IsNot Nothing Then
+                    Dim dt As DataTable = CType(cmbZona.DataSource, DataTable)
+                    Dim foundRow As DataRow = dt.AsEnumerable().FirstOrDefault(Function(r) _
+                    Not IsDBNull(r("Cod_zona")) AndAlso
+                    r("Cod_zona").ToString().Trim().Equals(zonaStr, StringComparison.OrdinalIgnoreCase))
+
+                    If foundRow IsNot Nothing Then
+                        cmbZona.SelectedValue = foundRow("Cod_zona")
+                    Else
+                        cmbZona.SelectedIndex = -1
+                    End If
+                Else
+                    cmbZona.SelectedIndex = -1
+                End If
             Else
                 cmbZona.SelectedIndex = -1
             End If
 
+            'Gestione scadenza tessera con cambio colore
             Dim scadTessera = row.Cells("ANA_Scad_tessera").Value
             If scadTessera IsNot Nothing AndAlso Not IsDBNull(scadTessera) Then
-                dtpScadTessera.Value = Convert.ToDateTime(scadTessera)
+                Dim dataScadenza As DateTime = Convert.ToDateTime(scadTessera)
+                txtScadTessera.Text = dataScadenza.ToString("dd/MM/yyyy")
+
+                ' Imposta il colore in base alla validità
+                AggiornColoreScadenzaTessera(dataScadenza)
             Else
-                dtpScadTessera.Value = DateTime.Today
+                txtScadTessera.Text = ""
+                txtScadTessera.BackColor = Color.White ' Nessuna data = bianco
+                txtScadTessera.ForeColor = Color.Black
             End If
 
             chkSocio.Checked = (ToIntOrZero(row.Cells("ANA_Socio").Value) = 1)
@@ -753,59 +878,29 @@ Public Class Form1
                 chkAssicurato.Checked = (ToIntOrZero(assic) = 1)
             End If
         Catch ex As Exception
+            ' Log dell'errore per debugging
+            System.Diagnostics.Debug.WriteLine($"Errore dgvAnagrafico_SelectionChanged: {ex.Message}")
+            MessageBox.Show($"Errore nel caricamento dei dati: {ex.Message}",
+                           "Errore", MessageBoxButtons.OK, MessageBoxIcon.Warning)
         End Try
     End Sub
+    ''' <summary>
+    ''' Aggiorna il colore di sfondo di txtScadTessera in base alla validità della tessera
+    ''' </summary>
+    ''' <param name="dataScadenza">Data di scadenza della tessera</param>
+    Private Sub AggiornColoreScadenzaTessera(dataScadenza As DateTime)
+        Dim dataRiferimento As DateTime = GetDataScadenzaRiferimento()
 
-    ' --- Funzioni utility ---
-    Private Function ReadConnectionString() As String
-        Dim configPath = Path.Combine(Application.StartupPath, "dbconfig.json")
-
-        Try
-            If File.Exists(configPath) Then
-                Dim json = File.ReadAllText(configPath)
-                Dim cfg = JsonSerializer.Deserialize(Of DbConfig)(json)
-                If cfg IsNot Nothing Then
-                    Return $"Server={cfg.Server};Database={cfg.Database};Uid={cfg.User};Pwd={cfg.Password};"
-                Else
-                    ' File esiste ma è vuoto o malformato
-                    MessageBox.Show("Il file dbconfig.json esiste ma non contiene dati validi." & Environment.NewLine &
-                                   "Verrà usata la connessione di fallback.",
-                                   "Configurazione DB",
-                                     MessageBoxButtons.OK,
-                                     MessageBoxIcon.Warning)
-                End If
-            Else
-                ' AGGIUNTO: File non esiste
-                MessageBox.Show("Il file dbconfig.json non è stato trovato." & Environment.NewLine &
-                               "Verrà usata la connessione di fallback." & Environment.NewLine & Environment.NewLine &
-                               "Percorso cercato: " & configPath,
-                               "Configurazione DB",
-                                MessageBoxButtons.OK,
-                                MessageBoxIcon.Information)
-            End If
-        Catch ex As Exception
-            ' Errore durante la lettura/parsing
-            MessageBox.Show($"Errore durante la lettura di dbconfig.json:" & Environment.NewLine & Environment.NewLine &
-                           $"{ex.Message}" & Environment.NewLine & Environment.NewLine &
-                           "Verrà usata la connessione di fallback.",
-                           "Configurazione DB",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Warning)
-        End Try
-
-        ' Fallback in tutti i casi
-        Return "Server=localhost;Database=db_01;Uid=root;Pwd=Mauro1963?;"
-    End Function
-
-    Private Class DbConfig
-        Public Property Server As String
-        Public Property Database As String
-        Public Property User As String
-        Public Property Password As String
-    End Class
-
-
-
+        If dataScadenza.Date < dataRiferimento.Date Then
+            ' Tessera scaduta - ROSSO
+            txtScadTessera.BackColor = Color.LightCoral
+            txtScadTessera.ForeColor = Color.White
+        Else
+            ' Tessera valida - VERDE
+            txtScadTessera.BackColor = Color.LightGreen
+            txtScadTessera.ForeColor = Color.Black
+        End If
+    End Sub
     Private Function CaricaDatiFiltrati(zona As String, qualifica As String, soloSoci As Boolean, soloMiliti As Boolean) As DataTable
         Dim dt As New DataTable("Anagrafico")
 
@@ -940,26 +1035,11 @@ Public Class Form1
         End Try
     End Sub
 
-    ' Legge la data di scadenza di riferimento dalla tabella tes_scad
-    Private Function GetDataScadenzaRiferimento() As DateTime
 
-        Try
-            Using conn As New MySqlConnection(ConnectionString)
-                conn.Open()
-                Dim sql As String = "SELECT data_scad_tes FROM tes_scad LIMIT 1"
-                Using cmd As New MySqlCommand(sql, conn)
-                    Dim result = cmd.ExecuteScalar()
-                    If result IsNot Nothing AndAlso Not IsDBNull(result) Then
-                        Return Convert.ToDateTime(result)
-                    End If
-                End Using
-            End Using
-        Catch ex As Exception
-            MessageBox.Show($"Errore lettura data scadenza: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
-        End Try
-        ' Fallback alla data odierna in caso di errore
+    Private Function GetDataScadenzaRiferimento() As DateTime
         Return DateTime.Today
     End Function
+
 
     ' ✅ NUOVO: Gestione rinnovo tessera
     Private Sub btnRinnovoTessera_Click(sender As Object, e As EventArgs) Handles btnRinnovoTessera.Click
@@ -985,9 +1065,9 @@ Public Class Form1
 
             ' Mostra conferma con i dettagli
             Dim socio As String = $"{txtCognome.Text} {txtNome.Text}"
-            Dim scadenzaAttuale As String = If(dtpScadTessera.Checked,
-                                               dtpScadTessera.Value.ToString("dd/MM/yyyy"),
-                                               "Non impostata")
+            Dim scadenzaAttuale As String = If(String.IsNullOrWhiteSpace(txtScadTessera.Text),
+                                           "Non impostata",
+                                           txtScadTessera.Text)
             Dim nuovaScadenza As String = dataRinnovo.ToString("dd/MM/yyyy")
 
             Dim messaggio As String = $"Confermi il rinnovo della tessera?" & vbCrLf & vbCrLf &
@@ -1004,10 +1084,9 @@ Public Class Form1
                     MessageBox.Show("Tessera rinnovata con successo!", "Successo",
                                   MessageBoxButtons.OK, MessageBoxIcon.Information)
 
-                    ' Aggiorna il DateTimePicker
-                    dtpScadTessera.Value = dataRinnovo
-                    dtpScadTessera.Checked = True
-
+                    ' ✅ MODIFICATO: Aggiorna la TextBox e il colore
+                    txtScadTessera.Text = dataRinnovo.ToString("dd/MM/yyyy")
+                    AggiornColoreScadenzaTessera(dataRinnovo)
                     ' Ricarica i dati
                     LoadData()
 
@@ -1189,6 +1268,42 @@ Public Class Form1
             Dim fileInfo As New FileInfo(path)
             package.SaveAs(fileInfo)
         End Using
+    End Sub
+
+    ' Aggiungi questo metodo alla fine della classe Form1, dopo btnExportExcel_Click
+
+    ''' <summary>
+    ''' Chiude Form1 e mostra nuovamente FormMain (menu laterale)
+    ''' </summary>
+    Private Sub btnChiudi_Click(sender As Object, e As EventArgs) Handles btnChiudi.Click
+        Try
+            ' Salva il layout prima di chiudere
+            SaveGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
+
+            ' Trova e mostra FormMain
+            Dim mainForm As FormMain = Nothing
+            For Each frm As Form In Application.OpenForms
+                If TypeOf frm Is FormMain Then
+                    mainForm = CType(frm, FormMain)
+                    Exit For
+                End If
+            Next
+
+            If mainForm IsNot Nothing Then
+                mainForm.Show()
+                mainForm.BringToFront()
+            Else
+                mainForm = New FormMain()
+                mainForm.Show()
+            End If
+
+            ' Chiudi Form1
+            Me.Close()
+
+        Catch ex As Exception
+            MessageBox.Show($"Errore: {ex.Message}", "Errore",
+                           MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
     End Sub
 
 End Class
