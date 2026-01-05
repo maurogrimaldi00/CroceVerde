@@ -77,43 +77,14 @@ Public Class Form1
         End If
     End Sub
 
-    ' --- Migliorie visuali e comportamentali per dgvAnagrafico ---
-    Private Sub EnhanceGridLookAndFeel()
-        dgvAnagrafico.AllowUserToAddRows = False
-        dgvAnagrafico.AllowUserToDeleteRows = False
-        dgvAnagrafico.AllowUserToOrderColumns = True
-        dgvAnagrafico.AllowUserToResizeColumns = True
-        dgvAnagrafico.ReadOnly = True
-        dgvAnagrafico.SelectionMode = DataGridViewSelectionMode.FullRowSelect
-        dgvAnagrafico.MultiSelect = False
-        dgvAnagrafico.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None
-        dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
-        dgvAnagrafico.RowHeadersVisible = False
 
-        ' Alternating row color
-        dgvAnagrafico.EnableHeadersVisualStyles = False
-        dgvAnagrafico.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.SystemColors.ControlDark
-        dgvAnagrafico.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White
-        dgvAnagrafico.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(245, 245, 245)
-        dgvAnagrafico.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.LightSkyBlue
-
-        AddHandler dgvAnagrafico.KeyDown, AddressOf dgvAnagrafico_KeyDown
-        AddHandler dgvAnagrafico.CellDoubleClick, AddressOf dgvAnagrafico_CellDoubleClick
-        ' ✅ AGGIUNTO: Salva automaticamente quando l'utente ridimensiona una colonna
-        AddHandler dgvAnagrafico.ColumnWidthChanged, AddressOf dgvAnagrafico_ColumnWidthChanged
-    End Sub
-
-    ' ✅ NUOVO METODO: Salvataggio automatico del layout
+    ' 
+    ' ✅ MODIFICA: Salvataggio automatico migliorato 
     Private Sub dgvAnagrafico_ColumnWidthChanged(sender As Object, e As DataGridViewColumnEventArgs)
-        ' ✅ NUOVO: Non salvare durante la configurazione iniziale
-        If isConfiguringGrid Then Return
-        ' Salva automaticamente dopo un breve ritardo per evitare salvataggi multipli
-        Static lastSave As DateTime = DateTime.MinValue
-        If (DateTime.Now - lastSave).TotalSeconds > 2 Then
-            SaveGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
-            lastSave = DateTime.Now
-        End If
+        If isConfiguringGrid OrElse Not isGridConfigured Then Return
 
+        ' Salva immediatamente senza debounce
+        SaveGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
     End Sub
 
     ' Carica le zone nel ComboBox con codice e descrizione affiancati
@@ -212,12 +183,16 @@ Public Class Form1
 
             ' ✅ MODIFICATO: Configura la griglia SOLO la prima volta
             If Not isGridConfigured Then
+                isConfiguringGrid = True
                 ConfigureGrid()
+                isConfiguringGrid = False
+
+                ' ✅ MODIFICATO: Ripristina il layout DOPO la configurazione (solo la prima volta)
+                RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
                 isGridConfigured = True
             End If
-            RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
             ApplyRowHighlight()
-            lblStatus.Text = $"Caricati record: {dgvAnagrafico.Rows.Count}"
+                lblStatus.Text = $"Caricati record: {dgvAnagrafico.Rows.Count}"
         Catch ex As Exception
             MessageBox.Show($"Errore caricamento: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
@@ -250,14 +225,16 @@ Public Class Form1
     ' Configura intestazioni, formati date e colonne checkbox per i tinyint
     Private Sub ConfigureGrid()
         If dgvAnagrafico.DataSource Is Nothing Then Return
-        ' ✅ NUOVO: Disabilita il salvataggio automatico durante la configurazione
-        isConfiguringGrid = True
+
         Try
+            ' ✅ NON impostare più AutoResizeColumns per mantenere le larghezze dell'utente
             For Each col As DataGridViewColumn In dgvAnagrafico.Columns
                 col.SortMode = DataGridViewColumnSortMode.Automatic
                 col.Resizable = DataGridViewTriState.True
+                ' ✅ NON impostare Width qui - lascia che sia RestoreGridLayout a farlo
             Next
 
+            ' ... (resto del codice invariato per intestazioni e checkbox) ...
             If dgvAnagrafico.Columns.Contains("id") Then dgvAnagrafico.Columns("id").HeaderText = "ID"
             If dgvAnagrafico.Columns.Contains("ANA_Cognome") Then dgvAnagrafico.Columns("ANA_Cognome").HeaderText = "Cognome"
             If dgvAnagrafico.Columns.Contains("ANA_Nome") Then dgvAnagrafico.Columns("ANA_Nome").HeaderText = "Nome"
@@ -285,11 +262,11 @@ Public Class Form1
             If dgvAnagrafico.Columns.Contains("ANA_Cellulare") Then dgvAnagrafico.Columns("ANA_Cellulare").HeaderText = "Cellulare"
 
             Dim tinyCols As New Dictionary(Of String, String) From {
-                {"ANA_Socio", "Socio"},
-                {"ANA_Milite", "Milite"},
-                {"ANA_Annullato", "Annullato"},
-                {"ANA_Assicurato", "Assicurato"}
-            }
+            {"ANA_Socio", "Socio"},
+            {"ANA_Milite", "Milite"},
+            {"ANA_Annullato", "Annullato"},
+            {"ANA_Assicurato", "Assicurato"}
+        }
 
             For Each kvp In tinyCols
                 Dim colName = kvp.Key
@@ -319,7 +296,6 @@ Public Class Form1
                 Dim nomeIndex As Integer = dgvAnagrafico.Columns("ANA_Nome").DisplayIndex
                 dgvAnagrafico.Columns("ANA_Sesso").DisplayIndex = nomeIndex + 1
 
-                ' Sposta le altre colonne di conseguenza per evitare conflitti
                 For Each col As DataGridViewColumn In dgvAnagrafico.Columns
                     If col.Name <> "ANA_Sesso" AndAlso col.Name <> "ANA_Nome" Then
                         If col.DisplayIndex > nomeIndex AndAlso col.DisplayIndex <= nomeIndex + 1 Then
@@ -330,17 +306,48 @@ Public Class Form1
             End If
 
             Try
-                'dgvAnagrafico.AutoResizeColumns() 'lascia le dimensioni dell'utente
+                ' ✅ RIMOSSO: dgvAnagrafico.AutoResizeColumns()
                 If dgvAnagrafico.Columns.Contains("ANA_Cognome") Then
                     bsAnagrafico.Sort = "ANA_Cognome ASC, ANA_Nome ASC"
                 End If
             Catch
             End Try
         Catch ex As Exception
-        Finally
-            ' ✅ NUOVO: Riabilita il salvataggio automatico
-            isConfiguringGrid = False
+            ' Gestisci eventuali errori
         End Try
+    End Sub
+
+    ' ✅ AGGIUNGI: Evento per salvare anche quando cambiano DisplayIndex o Visible
+    Private Sub EnhanceGridLookAndFeel()
+        dgvAnagrafico.AllowUserToAddRows = False
+        dgvAnagrafico.AllowUserToDeleteRows = False
+        dgvAnagrafico.AllowUserToOrderColumns = True
+        dgvAnagrafico.AllowUserToResizeColumns = True
+        dgvAnagrafico.ReadOnly = True
+        dgvAnagrafico.SelectionMode = DataGridViewSelectionMode.FullRowSelect
+        dgvAnagrafico.MultiSelect = False
+        dgvAnagrafico.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None
+        dgvAnagrafico.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None
+        dgvAnagrafico.RowHeadersVisible = False
+
+        dgvAnagrafico.EnableHeadersVisualStyles = False
+        dgvAnagrafico.ColumnHeadersDefaultCellStyle.BackColor = System.Drawing.SystemColors.ControlDark
+        dgvAnagrafico.ColumnHeadersDefaultCellStyle.ForeColor = System.Drawing.Color.White
+        dgvAnagrafico.AlternatingRowsDefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(245, 245, 245)
+        dgvAnagrafico.DefaultCellStyle.SelectionBackColor = System.Drawing.Color.LightSkyBlue
+
+        AddHandler dgvAnagrafico.KeyDown, AddressOf dgvAnagrafico_KeyDown
+        AddHandler dgvAnagrafico.CellDoubleClick, AddressOf dgvAnagrafico_CellDoubleClick
+        AddHandler dgvAnagrafico.ColumnWidthChanged, AddressOf dgvAnagrafico_ColumnWidthChanged
+
+        ' ✅ AGGIUNGI: Salva anche quando l'utente riordina le colonne
+        AddHandler dgvAnagrafico.ColumnDisplayIndexChanged, AddressOf dgvAnagrafico_ColumnDisplayIndexChanged
+    End Sub
+
+    ' ✅ NUOVO: Salva quando l'utente riordina le colonne
+    Private Sub dgvAnagrafico_ColumnDisplayIndexChanged(sender As Object, e As DataGridViewColumnEventArgs)
+        If isConfiguringGrid OrElse Not isGridConfigured Then Return
+        SaveGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
     End Sub
 
     ' --- Event handlers e utility per la griglia ---
@@ -499,18 +506,6 @@ Public Class Form1
     ' --- Gestori eventi per i pulsanti ---
     Private Sub btnExportCsv_Click(sender As Object, e As EventArgs) Handles btnExportCsv.Click
         ExportGridCsvDialog(sender, e)
-    End Sub
-
-    Private Sub btnSaveLayout_Click(sender As Object, e As EventArgs) Handles btnSaveLayout.Click
-        SaveGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
-        MessageBox.Show("Layout salvato.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information)
-    End Sub
-
-    Private Sub btnRestoreLayout_Click(sender As Object, e As EventArgs) Handles btnRestoreLayout.Click
-        RestoreGridLayout(Path.Combine(Application.StartupPath, GridLayoutFileName))
-        'ConfigureGrid()
-        ApplyRowHighlight()
-        MessageBox.Show("Layout ripristinato.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information)
     End Sub
 
     Private Sub btnToggleHighlight_Click(sender As Object, e As EventArgs) Handles btnToggleHighlight.Click
@@ -965,6 +960,158 @@ Public Class Form1
         ' Fallback alla data odierna in caso di errore
         Return DateTime.Today
     End Function
+
+    ' ✅ NUOVO: Gestione rinnovo tessera
+    Private Sub btnRinnovoTessera_Click(sender As Object, e As EventArgs) Handles btnRinnovoTessera.Click
+        ' Verifica che sia selezionato un record
+        If String.IsNullOrWhiteSpace(txtId.Text) Then
+            MessageBox.Show("Seleziona un record dalla griglia per rinnovare la tessera.",
+                          "Avviso", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Return
+        End If
+
+        Try
+            ' Leggi la data di rinnovo dai parametri
+            Dim dataRinnovo As DateTime = GetDataRinnovoParametri()
+
+            If dataRinnovo = DateTime.MinValue Then
+                MessageBox.Show("Impossibile leggere la data di rinnovo dai parametri." & vbCrLf &
+                              "Verifica che esista il record nella tabella parametri con:" & vbCrLf &
+                              "Para_gruppo = 'Generali'" & vbCrLf &
+                              "Para_tipo = 'Data_Rinnovo'",
+                              "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Return
+            End If
+
+            ' Mostra conferma con i dettagli
+            Dim socio As String = $"{txtCognome.Text} {txtNome.Text}"
+            Dim scadenzaAttuale As String = If(dtpScadTessera.Checked,
+                                               dtpScadTessera.Value.ToString("dd/MM/yyyy"),
+                                               "Non impostata")
+            Dim nuovaScadenza As String = dataRinnovo.ToString("dd/MM/yyyy")
+
+            Dim messaggio As String = $"Confermi il rinnovo della tessera?" & vbCrLf & vbCrLf &
+                                     $"Socio: {socio}" & vbCrLf &
+                                     $"Scadenza attuale: {scadenzaAttuale}" & vbCrLf &
+                                     $"Nuova scadenza: {nuovaScadenza}"
+
+            Dim result = MessageBox.Show(messaggio, "Conferma Rinnovo Tessera",
+                                        MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+
+            If result = DialogResult.Yes Then
+                ' Esegui l'aggiornamento
+                If RinnovaTessera(Integer.Parse(txtId.Text), dataRinnovo) Then
+                    MessageBox.Show("Tessera rinnovata con successo!", "Successo",
+                                  MessageBoxButtons.OK, MessageBoxIcon.Information)
+
+                    ' Aggiorna il DateTimePicker
+                    dtpScadTessera.Value = dataRinnovo
+                    dtpScadTessera.Checked = True
+
+                    ' Ricarica i dati
+                    LoadData()
+
+                    ' Evidenzia il record appena aggiornato
+                    For Each row As DataGridViewRow In dgvAnagrafico.Rows
+                        If row.Cells("id").Value IsNot Nothing AndAlso
+                           CInt(row.Cells("id").Value) = Integer.Parse(txtId.Text) Then
+                            dgvAnagrafico.CurrentCell = row.Cells("id")
+                            dgvAnagrafico.FirstDisplayedScrollingRowIndex = row.Index
+                            Exit For
+                        End If
+                    Next
+                Else
+                    MessageBox.Show("Errore durante il rinnovo della tessera.",
+                                  "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                End If
+            End If
+
+        Catch ex As Exception
+            MessageBox.Show($"Errore durante il rinnovo tessera: {ex.Message}",
+                          "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Legge la data di rinnovo dalla tabella parametri
+    ''' </summary>
+    ''' <returns>Data di rinnovo o DateTime.MinValue se non trovata</returns>
+    Private Function GetDataRinnovoParametri() As DateTime
+        Try
+            Using conn As New MySqlConnection(ConnectionString)
+                conn.Open()
+                Dim sql As String = "SELECT Para_Valore FROM parametri " &
+                                   "WHERE Para_gruppo = 'Generali' AND Para_tipo = 'Data_Rinnovo' " &
+                                   "LIMIT 1"
+
+                Using cmd As New MySqlCommand(sql, conn)
+                    Dim result = cmd.ExecuteScalar()
+
+                    If result IsNot Nothing AndAlso Not IsDBNull(result) Then
+                        Dim dataStr As String = result.ToString().Trim()
+
+                        ' Prova vari formati di data
+                        Dim dataRinnovo As DateTime
+
+                        ' Formato ISO (yyyy-MM-dd)
+                        If DateTime.TryParse(dataStr, dataRinnovo) Then
+                            Return dataRinnovo
+                        End If
+
+                        ' Formato italiano (dd/MM/yyyy)
+                        If DateTime.TryParseExact(dataStr, "dd/MM/yyyy",
+                                                 Globalization.CultureInfo.InvariantCulture,
+                                                 Globalization.DateTimeStyles.None,
+                                                 dataRinnovo) Then
+                            Return dataRinnovo
+                        End If
+
+                        ' Altri formati comuni
+                        Dim formati As String() = {"yyyy-MM-dd", "dd-MM-yyyy", "dd.MM.yyyy", "yyyy/MM/dd"}
+                        For Each formato In formati
+                            If DateTime.TryParseExact(dataStr, formato,
+                                                     Globalization.CultureInfo.InvariantCulture,
+                                                     Globalization.DateTimeStyles.None,
+                                                     dataRinnovo) Then
+                                Return dataRinnovo
+                            End If
+                        Next
+                    End If
+                End Using
+            End Using
+        Catch ex As Exception
+            System.Diagnostics.Debug.WriteLine($"Errore GetDataRinnovoParametri: {ex.Message}")
+        End Try
+
+        Return DateTime.MinValue
+    End Function
+
+    ''' <summary>
+    ''' Aggiorna la data di scadenza tessera per un socio
+    ''' </summary>
+    ''' <param name="idSocio">ID del socio da aggiornare</param>
+    ''' <param name="nuovaDataScadenza">Nuova data di scadenza</param>
+    ''' <returns>True se l'aggiornamento è riuscito</returns>
+    Private Function RinnovaTessera(idSocio As Integer, nuovaDataScadenza As DateTime) As Boolean
+        Try
+            Using conn As New MySqlConnection(ConnectionString)
+                conn.Open()
+                Dim sql As String = "UPDATE anagrafico SET ANA_Scad_tessera = @DataScadenza WHERE id = @Id"
+
+                Using cmd As New MySqlCommand(sql, conn)
+                    cmd.Parameters.AddWithValue("@DataScadenza", nuovaDataScadenza.Date)
+                    cmd.Parameters.AddWithValue("@Id", idSocio)
+
+                    Dim rowsAffected As Integer = cmd.ExecuteNonQuery()
+                    Return rowsAffected > 0
+                End Using
+            End Using
+        Catch ex As Exception
+            System.Diagnostics.Debug.WriteLine($"Errore RinnovaTessera: {ex.Message}")
+            Return False
+        End Try
+    End Function
+
 
     Private Sub btnExportExcel_Click(sender As Object, e As EventArgs) Handles btnExportExcel.Click
         ExportGridExcelDialogEPPlus(sender, e)

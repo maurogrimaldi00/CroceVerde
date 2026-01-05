@@ -46,9 +46,8 @@ Partial Class Form1
     Friend WithEvents btnSearch As System.Windows.Forms.Button
     Friend WithEvents lblStatus As System.Windows.Forms.Label
     Friend WithEvents btnExportCsv As System.Windows.Forms.Button
-    Friend WithEvents btnSaveLayout As System.Windows.Forms.Button
-    Friend WithEvents btnRestoreLayout As System.Windows.Forms.Button
     Friend WithEvents btnToggleHighlight As System.Windows.Forms.Button
+    Friend WithEvents btnRinnovoTessera As System.Windows.Forms.Button
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
@@ -82,9 +81,8 @@ Partial Class Form1
         btnSearch = New Button()
         lblStatus = New Label()
         btnExportCsv = New Button()
-        btnSaveLayout = New Button()
-        btnRestoreLayout = New Button()
         btnToggleHighlight = New Button()
+        btnRinnovoTessera = New Button()
         Button1 = New Button()
         Label9 = New Label()
         Label4 = New Label()
@@ -111,189 +109,223 @@ Partial Class Form1
         dgvAnagrafico.AllowUserToResizeRows = False
         dgvAnagrafico.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         dgvAnagrafico.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        dgvAnagrafico.Location = New Point(12, 12)
+        dgvAnagrafico.Location = New Point(15, 15)
+        dgvAnagrafico.Margin = New Padding(4)
         dgvAnagrafico.MultiSelect = False
         dgvAnagrafico.Name = "dgvAnagrafico"
         dgvAnagrafico.ReadOnly = True
         dgvAnagrafico.RowHeadersWidth = 51
-        dgvAnagrafico.RowTemplate.Height = 25
         dgvAnagrafico.SelectionMode = DataGridViewSelectionMode.FullRowSelect
-        dgvAnagrafico.Size = New Size(1477, 420)
+        dgvAnagrafico.Size = New Size(1846, 535)
         dgvAnagrafico.TabIndex = 0
         dgvAnagrafico.UseWaitCursor = True
         ' 
         ' txtId
         ' 
+        txtId.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtId.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(192))
         txtId.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        txtId.Location = New Point(12, 496)
+        txtId.Location = New Point(289, 627)
+        txtId.Margin = New Padding(4)
         txtId.Name = "txtId"
         txtId.ReadOnly = True
-        txtId.Size = New Size(67, 30)
+        txtId.Size = New Size(83, 30)
         txtId.TabIndex = 1
         txtId.TextAlign = HorizontalAlignment.Center
         txtId.UseWaitCursor = True
         ' 
         ' txtCognome
         ' 
+        txtCognome.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtCognome.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(192))
         txtCognome.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        txtCognome.Location = New Point(85, 496)
+        txtCognome.Location = New Point(380, 627)
+        txtCognome.Margin = New Padding(4)
         txtCognome.Name = "txtCognome"
-        txtCognome.Size = New Size(200, 30)
+        txtCognome.Size = New Size(249, 30)
         txtCognome.TabIndex = 2
         txtCognome.UseWaitCursor = True
         ' 
         ' txtNome
         ' 
+        txtNome.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtNome.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(192))
         txtNome.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        txtNome.Location = New Point(291, 496)
+        txtNome.Location = New Point(638, 627)
+        txtNome.Margin = New Padding(4)
         txtNome.Name = "txtNome"
-        txtNome.Size = New Size(200, 30)
+        txtNome.Size = New Size(249, 30)
         txtNome.TabIndex = 3
         txtNome.UseWaitCursor = True
         ' 
         ' dtpDataNascita
         ' 
+        dtpDataNascita.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         dtpDataNascita.Format = DateTimePickerFormat.Short
-        dtpDataNascita.Location = New Point(497, 499)
+        dtpDataNascita.Location = New Point(895, 631)
+        dtpDataNascita.Margin = New Padding(4)
         dtpDataNascita.Name = "dtpDataNascita"
         dtpDataNascita.ShowCheckBox = True
-        dtpDataNascita.Size = New Size(155, 27)
+        dtpDataNascita.Size = New Size(193, 27)
         dtpDataNascita.TabIndex = 4
         dtpDataNascita.UseWaitCursor = True
         ' 
         ' cmbSesso
         ' 
+        cmbSesso.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         cmbSesso.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(192))
         cmbSesso.DropDownStyle = ComboBoxStyle.DropDownList
         cmbSesso.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         cmbSesso.FormattingEnabled = True
         cmbSesso.Items.AddRange(New Object() {"M", "F"})
-        cmbSesso.Location = New Point(658, 498)
+        cmbSesso.Location = New Point(1096, 629)
+        cmbSesso.Margin = New Padding(4)
         cmbSesso.Name = "cmbSesso"
-        cmbSesso.Size = New Size(50, 31)
+        cmbSesso.Size = New Size(62, 31)
         cmbSesso.TabIndex = 5
         cmbSesso.UseWaitCursor = True
         ' 
         ' cmbQualifica
         ' 
+        cmbQualifica.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         cmbQualifica.DropDownStyle = ComboBoxStyle.DropDownList
         cmbQualifica.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
         cmbQualifica.FormattingEnabled = True
-        cmbQualifica.Location = New Point(549, 621)
+        cmbQualifica.Location = New Point(960, 783)
+        cmbQualifica.Margin = New Padding(4)
         cmbQualifica.Name = "cmbQualifica"
-        cmbQualifica.Size = New Size(140, 31)
+        cmbQualifica.Size = New Size(174, 31)
         cmbQualifica.TabIndex = 6
         cmbQualifica.UseWaitCursor = True
         ' 
         ' txtIndirizzo
         ' 
+        txtIndirizzo.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtIndirizzo.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        txtIndirizzo.Location = New Point(12, 554)
+        txtIndirizzo.Location = New Point(289, 699)
+        txtIndirizzo.Margin = New Padding(4)
         txtIndirizzo.Name = "txtIndirizzo"
-        txtIndirizzo.Size = New Size(273, 30)
+        txtIndirizzo.Size = New Size(340, 30)
         txtIndirizzo.TabIndex = 7
         txtIndirizzo.UseWaitCursor = True
         ' 
         ' txtCivico
         ' 
+        txtCivico.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtCivico.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        txtCivico.Location = New Point(291, 554)
+        txtCivico.Location = New Point(638, 699)
+        txtCivico.Margin = New Padding(4)
         txtCivico.Name = "txtCivico"
-        txtCivico.Size = New Size(53, 30)
+        txtCivico.Size = New Size(65, 30)
         txtCivico.TabIndex = 8
         txtCivico.TextAlign = HorizontalAlignment.Center
         txtCivico.UseWaitCursor = True
         ' 
         ' txtLocalita
         ' 
+        txtLocalita.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtLocalita.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        txtLocalita.Location = New Point(350, 554)
+        txtLocalita.Location = New Point(712, 699)
+        txtLocalita.Margin = New Padding(4)
         txtLocalita.Name = "txtLocalita"
-        txtLocalita.Size = New Size(225, 30)
+        txtLocalita.Size = New Size(280, 30)
         txtLocalita.TabIndex = 9
         txtLocalita.UseWaitCursor = True
         ' 
         ' txtProv
         ' 
+        txtProv.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtProv.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        txtProv.Location = New Point(585, 554)
+        txtProv.Location = New Point(1005, 699)
+        txtProv.Margin = New Padding(4)
         txtProv.Name = "txtProv"
-        txtProv.Size = New Size(49, 30)
+        txtProv.Size = New Size(60, 30)
         txtProv.TabIndex = 10
         txtProv.TextAlign = HorizontalAlignment.Center
         txtProv.UseWaitCursor = True
         ' 
         ' txtCap
         ' 
+        txtCap.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtCap.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        txtCap.Location = New Point(640, 554)
+        txtCap.Location = New Point(1074, 699)
+        txtCap.Margin = New Padding(4)
         txtCap.Name = "txtCap"
-        txtCap.Size = New Size(68, 30)
+        txtCap.Size = New Size(84, 30)
         txtCap.TabIndex = 11
         txtCap.TextAlign = HorizontalAlignment.Center
         txtCap.UseWaitCursor = True
         ' 
         ' dtpDataIscrizione
         ' 
+        dtpDataIscrizione.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         dtpDataIscrizione.Format = DateTimePickerFormat.Short
-        dtpDataIscrizione.Location = New Point(12, 679)
+        dtpDataIscrizione.Location = New Point(289, 856)
+        dtpDataIscrizione.Margin = New Padding(4)
         dtpDataIscrizione.Name = "dtpDataIscrizione"
         dtpDataIscrizione.ShowCheckBox = True
-        dtpDataIscrizione.Size = New Size(146, 27)
+        dtpDataIscrizione.Size = New Size(182, 27)
         dtpDataIscrizione.TabIndex = 12
         dtpDataIscrizione.UseWaitCursor = True
         ' 
         ' txtCellulare
         ' 
+        txtCellulare.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtCellulare.BackColor = Color.FromArgb(CByte(255), CByte(224), CByte(192))
         txtCellulare.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        txtCellulare.Location = New Point(13, 613)
+        txtCellulare.Location = New Point(290, 773)
+        txtCellulare.Margin = New Padding(4)
         txtCellulare.Name = "txtCellulare"
-        txtCellulare.Size = New Size(156, 30)
+        txtCellulare.Size = New Size(194, 30)
         txtCellulare.TabIndex = 13
         txtCellulare.TextAlign = HorizontalAlignment.Center
         txtCellulare.UseWaitCursor = True
         ' 
         ' txtCF
         ' 
+        txtCF.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         txtCF.Font = New Font("Segoe UI", 10.2F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        txtCF.Location = New Point(175, 616)
+        txtCF.Location = New Point(493, 777)
+        txtCF.Margin = New Padding(4)
         txtCF.Name = "txtCF"
-        txtCF.Size = New Size(200, 30)
+        txtCF.Size = New Size(249, 30)
         txtCF.TabIndex = 14
         txtCF.TextAlign = HorizontalAlignment.Center
         txtCF.UseWaitCursor = True
         ' 
         ' cmbZona
         ' 
+        cmbZona.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         cmbZona.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(128))
         cmbZona.DropDownStyle = ComboBoxStyle.DropDownList
         cmbZona.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         cmbZona.FormattingEnabled = True
-        cmbZona.Location = New Point(381, 618)
+        cmbZona.Location = New Point(750, 779)
+        cmbZona.Margin = New Padding(4)
         cmbZona.Name = "cmbZona"
-        cmbZona.Size = New Size(162, 31)
+        cmbZona.Size = New Size(202, 31)
         cmbZona.TabIndex = 15
         cmbZona.UseWaitCursor = True
         ' 
         ' dtpScadTessera
         ' 
+        dtpScadTessera.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         dtpScadTessera.Font = New Font("Segoe UI", 10.2F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
         dtpScadTessera.Format = DateTimePickerFormat.Short
-        dtpScadTessera.Location = New Point(310, 681)
+        dtpScadTessera.Location = New Point(662, 858)
+        dtpScadTessera.Margin = New Padding(4)
         dtpScadTessera.Name = "dtpScadTessera"
         dtpScadTessera.ShowCheckBox = True
-        dtpScadTessera.Size = New Size(181, 30)
+        dtpScadTessera.Size = New Size(225, 30)
         dtpScadTessera.TabIndex = 16
         dtpScadTessera.UseWaitCursor = True
         ' 
         ' chkSocio
         ' 
+        chkSocio.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         chkSocio.AutoSize = True
-        chkSocio.Location = New Point(725, 496)
+        chkSocio.Location = New Point(1180, 627)
+        chkSocio.Margin = New Padding(4)
         chkSocio.Name = "chkSocio"
         chkSocio.Size = New Size(68, 24)
         chkSocio.TabIndex = 17
@@ -303,8 +335,10 @@ Partial Class Form1
         ' 
         ' chkMilite
         ' 
+        chkMilite.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         chkMilite.AutoSize = True
-        chkMilite.Location = New Point(725, 528)
+        chkMilite.Location = New Point(1180, 667)
+        chkMilite.Margin = New Padding(4)
         chkMilite.Name = "chkMilite"
         chkMilite.Size = New Size(69, 24)
         chkMilite.TabIndex = 18
@@ -314,8 +348,10 @@ Partial Class Form1
         ' 
         ' chkAnnullato
         ' 
+        chkAnnullato.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         chkAnnullato.AutoSize = True
-        chkAnnullato.Location = New Point(725, 700)
+        chkAnnullato.Location = New Point(1180, 748)
+        chkAnnullato.Margin = New Padding(4)
         chkAnnullato.Name = "chkAnnullato"
         chkAnnullato.Size = New Size(95, 24)
         chkAnnullato.TabIndex = 19
@@ -325,8 +361,10 @@ Partial Class Form1
         ' 
         ' chkAssicurato
         ' 
+        chkAssicurato.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         chkAssicurato.AutoSize = True
-        chkAssicurato.Location = New Point(725, 560)
+        chkAssicurato.Location = New Point(1180, 707)
+        chkAssicurato.Margin = New Padding(4)
         chkAssicurato.Name = "chkAssicurato"
         chkAssicurato.Size = New Size(99, 24)
         chkAssicurato.TabIndex = 20
@@ -337,11 +375,13 @@ Partial Class Form1
         ' 
         ' btnAdd
         ' 
+        btnAdd.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnAdd.BackColor = Color.FromArgb(CByte(128), CByte(255), CByte(128))
-        btnAdd.Font = New Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnAdd.Location = New Point(826, 490)
+        btnAdd.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnAdd.Location = New Point(1306, 619)
+        btnAdd.Margin = New Padding(4)
         btnAdd.Name = "btnAdd"
-        btnAdd.Size = New Size(95, 30)
+        btnAdd.Size = New Size(119, 38)
         btnAdd.TabIndex = 21
         btnAdd.Text = "Aggiungi"
         btnAdd.UseVisualStyleBackColor = False
@@ -349,11 +389,13 @@ Partial Class Form1
         ' 
         ' btnUpdate
         ' 
+        btnUpdate.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnUpdate.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(255))
-        btnUpdate.Font = New Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnUpdate.Location = New Point(931, 490)
+        btnUpdate.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnUpdate.Location = New Point(1438, 619)
+        btnUpdate.Margin = New Padding(4)
         btnUpdate.Name = "btnUpdate"
-        btnUpdate.Size = New Size(95, 30)
+        btnUpdate.Size = New Size(119, 38)
         btnUpdate.TabIndex = 22
         btnUpdate.Text = "Aggiorna"
         btnUpdate.UseVisualStyleBackColor = False
@@ -361,10 +403,12 @@ Partial Class Form1
         ' 
         ' btnDelete
         ' 
+        btnDelete.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnDelete.BackColor = Color.FromArgb(CByte(255), CByte(128), CByte(128))
-        btnDelete.Location = New Point(826, 526)
+        btnDelete.Location = New Point(1306, 665)
+        btnDelete.Margin = New Padding(4)
         btnDelete.Name = "btnDelete"
-        btnDelete.Size = New Size(95, 30)
+        btnDelete.Size = New Size(119, 38)
         btnDelete.TabIndex = 23
         btnDelete.Text = "Elimina"
         btnDelete.UseVisualStyleBackColor = False
@@ -372,10 +416,12 @@ Partial Class Form1
         ' 
         ' btnRefresh
         ' 
+        btnRefresh.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnRefresh.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(192))
-        btnRefresh.Location = New Point(931, 526)
+        btnRefresh.Location = New Point(1438, 665)
+        btnRefresh.Margin = New Padding(4)
         btnRefresh.Name = "btnRefresh"
-        btnRefresh.Size = New Size(95, 30)
+        btnRefresh.Size = New Size(119, 38)
         btnRefresh.TabIndex = 24
         btnRefresh.Text = "Ricarica"
         btnRefresh.UseVisualStyleBackColor = False
@@ -383,10 +429,12 @@ Partial Class Form1
         ' 
         ' btnClear
         ' 
+        btnClear.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnClear.BackColor = Color.Silver
-        btnClear.Location = New Point(826, 454)
+        btnClear.Location = New Point(1306, 575)
+        btnClear.Margin = New Padding(4)
         btnClear.Name = "btnClear"
-        btnClear.Size = New Size(200, 30)
+        btnClear.Size = New Size(250, 38)
         btnClear.TabIndex = 25
         btnClear.Text = "Pulisci campi"
         btnClear.UseVisualStyleBackColor = False
@@ -394,20 +442,24 @@ Partial Class Form1
         ' 
         ' txtSearch
         ' 
+        txtSearch.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         txtSearch.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(192))
-        txtSearch.Location = New Point(12, 444)
+        txtSearch.Location = New Point(289, 562)
+        txtSearch.Margin = New Padding(4)
         txtSearch.Name = "txtSearch"
-        txtSearch.Size = New Size(620, 27)
+        txtSearch.Size = New Size(774, 27)
         txtSearch.TabIndex = 26
         txtSearch.UseWaitCursor = True
         ' 
         ' btnSearch
         ' 
+        btnSearch.Anchor = AnchorStyles.Bottom Or AnchorStyles.Right
         btnSearch.BackColor = Color.FromArgb(CByte(255), CByte(192), CByte(255))
-        btnSearch.Font = New Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        btnSearch.Location = New Point(642, 444)
+        btnSearch.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnSearch.Location = New Point(1076, 562)
+        btnSearch.Margin = New Padding(4)
         btnSearch.Name = "btnSearch"
-        btnSearch.Size = New Size(130, 27)
+        btnSearch.Size = New Size(162, 34)
         btnSearch.TabIndex = 27
         btnSearch.Text = "Ricerche"
         btnSearch.TextImageRelation = TextImageRelation.TextAboveImage
@@ -418,7 +470,8 @@ Partial Class Form1
         ' 
         lblStatus.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         lblStatus.AutoSize = True
-        lblStatus.Location = New Point(12, 720)
+        lblStatus.Location = New Point(289, 937)
+        lblStatus.Margin = New Padding(4, 0, 4, 0)
         lblStatus.Name = "lblStatus"
         lblStatus.Size = New Size(53, 20)
         lblStatus.TabIndex = 29
@@ -427,54 +480,52 @@ Partial Class Form1
         ' 
         ' btnExportCsv
         ' 
+        btnExportCsv.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnExportCsv.BackColor = Color.FromArgb(CByte(255), CByte(255), CByte(128))
-        btnExportCsv.Location = New Point(1032, 493)
+        btnExportCsv.Location = New Point(1564, 623)
+        btnExportCsv.Margin = New Padding(4)
         btnExportCsv.Name = "btnExportCsv"
-        btnExportCsv.Size = New Size(200, 27)
+        btnExportCsv.Size = New Size(250, 34)
         btnExportCsv.TabIndex = 30
         btnExportCsv.Text = "Esporta CSV"
         btnExportCsv.UseVisualStyleBackColor = False
         btnExportCsv.UseWaitCursor = True
         ' 
-        ' btnSaveLayout
-        ' 
-        btnSaveLayout.BackColor = Color.FromArgb(CByte(192), CByte(255), CByte(255))
-        btnSaveLayout.Location = New Point(826, 598)
-        btnSaveLayout.Name = "btnSaveLayout"
-        btnSaveLayout.Size = New Size(200, 27)
-        btnSaveLayout.TabIndex = 31
-        btnSaveLayout.Text = "Salva layout"
-        btnSaveLayout.UseVisualStyleBackColor = False
-        btnSaveLayout.UseWaitCursor = True
-        ' 
-        ' btnRestoreLayout
-        ' 
-        btnRestoreLayout.BackColor = Color.FromArgb(CByte(255), CByte(192), CByte(192))
-        btnRestoreLayout.Location = New Point(826, 636)
-        btnRestoreLayout.Name = "btnRestoreLayout"
-        btnRestoreLayout.Size = New Size(200, 29)
-        btnRestoreLayout.TabIndex = 32
-        btnRestoreLayout.Text = "Ripristina layout"
-        btnRestoreLayout.UseVisualStyleBackColor = False
-        btnRestoreLayout.UseWaitCursor = True
-        ' 
         ' btnToggleHighlight
         ' 
+        btnToggleHighlight.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnToggleHighlight.BackColor = Color.FromArgb(CByte(192), CByte(192), CByte(0))
-        btnToggleHighlight.Location = New Point(826, 564)
+        btnToggleHighlight.Location = New Point(1307, 711)
+        btnToggleHighlight.Margin = New Padding(4)
         btnToggleHighlight.Name = "btnToggleHighlight"
-        btnToggleHighlight.Size = New Size(200, 27)
+        btnToggleHighlight.Size = New Size(250, 34)
         btnToggleHighlight.TabIndex = 33
         btnToggleHighlight.Text = "Tessere Scadute ON/OFF"
         btnToggleHighlight.UseVisualStyleBackColor = False
         btnToggleHighlight.UseWaitCursor = True
         ' 
+        ' btnRinnovoTessera
+        ' 
+        btnRinnovoTessera.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
+        btnRinnovoTessera.BackColor = Color.FromArgb(CByte(255), CByte(215), CByte(0))
+        btnRinnovoTessera.Font = New Font("Segoe UI", 9.0F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
+        btnRinnovoTessera.Location = New Point(1564, 714)
+        btnRinnovoTessera.Margin = New Padding(4)
+        btnRinnovoTessera.Name = "btnRinnovoTessera"
+        btnRinnovoTessera.Size = New Size(250, 32)
+        btnRinnovoTessera.TabIndex = 63
+        btnRinnovoTessera.Text = "🔄 Rinnovo Tessera"
+        btnRinnovoTessera.UseVisualStyleBackColor = False
+        btnRinnovoTessera.UseWaitCursor = True
+        ' 
         ' Button1
         ' 
+        Button1.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Button1.BackColor = Color.FromArgb(CByte(255), CByte(192), CByte(128))
-        Button1.Location = New Point(1032, 454)
+        Button1.Location = New Point(1564, 575)
+        Button1.Margin = New Padding(4)
         Button1.Name = "Button1"
-        Button1.Size = New Size(200, 33)
+        Button1.Size = New Size(250, 41)
         Button1.TabIndex = 37
         Button1.Text = "Stampe"
         Button1.UseVisualStyleBackColor = False
@@ -482,9 +533,11 @@ Partial Class Form1
         ' 
         ' Label9
         ' 
+        Label9.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label9.AutoSize = True
         Label9.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label9.Location = New Point(12, 477)
+        Label9.Location = New Point(289, 603)
+        Label9.Margin = New Padding(4, 0, 4, 0)
         Label9.Name = "Label9"
         Label9.Size = New Size(48, 17)
         Label9.TabIndex = 43
@@ -493,9 +546,11 @@ Partial Class Form1
         ' 
         ' Label4
         ' 
+        Label4.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label4.AutoSize = True
         Label4.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label4.Location = New Point(12, 535)
+        Label4.Location = New Point(289, 676)
+        Label4.Margin = New Padding(4, 0, 4, 0)
         Label4.Name = "Label4"
         Label4.Size = New Size(57, 17)
         Label4.TabIndex = 44
@@ -504,9 +559,11 @@ Partial Class Form1
         ' 
         ' Label5
         ' 
+        Label5.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label5.AutoSize = True
         Label5.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label5.Location = New Point(658, 479)
+        Label5.Location = New Point(1096, 606)
+        Label5.Margin = New Padding(4, 0, 4, 0)
         Label5.Name = "Label5"
         Label5.Size = New Size(42, 17)
         Label5.TabIndex = 45
@@ -515,9 +572,11 @@ Partial Class Form1
         ' 
         ' Label6
         ' 
+        Label6.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label6.AutoSize = True
         Label6.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label6.Location = New Point(499, 479)
+        Label6.Location = New Point(898, 606)
+        Label6.Margin = New Padding(4, 0, 4, 0)
         Label6.Name = "Label6"
         Label6.Size = New Size(82, 17)
         Label6.TabIndex = 46
@@ -526,9 +585,11 @@ Partial Class Form1
         ' 
         ' Label7
         ' 
+        Label7.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label7.AutoSize = True
         Label7.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label7.Location = New Point(291, 479)
+        Label7.Location = New Point(638, 606)
+        Label7.Margin = New Padding(4, 0, 4, 0)
         Label7.Name = "Label7"
         Label7.Size = New Size(44, 17)
         Label7.TabIndex = 47
@@ -537,9 +598,11 @@ Partial Class Form1
         ' 
         ' Label8
         ' 
+        Label8.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label8.AutoSize = True
         Label8.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label8.Location = New Point(85, 479)
+        Label8.Location = New Point(380, 606)
+        Label8.Margin = New Padding(4, 0, 4, 0)
         Label8.Name = "Label8"
         Label8.Size = New Size(65, 17)
         Label8.TabIndex = 48
@@ -548,9 +611,11 @@ Partial Class Form1
         ' 
         ' Label1
         ' 
+        Label1.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label1.AutoSize = True
         Label1.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label1.Location = New Point(656, 535)
+        Label1.Location = New Point(1094, 676)
+        Label1.Margin = New Padding(4, 0, 4, 0)
         Label1.Name = "Label1"
         Label1.Size = New Size(31, 17)
         Label1.TabIndex = 49
@@ -559,9 +624,11 @@ Partial Class Form1
         ' 
         ' Label10
         ' 
+        Label10.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label10.AutoSize = True
         Label10.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label10.Location = New Point(597, 535)
+        Label10.Location = New Point(1020, 676)
+        Label10.Margin = New Padding(4, 0, 4, 0)
         Label10.Name = "Label10"
         Label10.Size = New Size(23, 17)
         Label10.TabIndex = 50
@@ -570,9 +637,11 @@ Partial Class Form1
         ' 
         ' Label11
         ' 
+        Label11.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label11.AutoSize = True
         Label11.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label11.Location = New Point(350, 535)
+        Label11.Location = New Point(712, 676)
+        Label11.Margin = New Padding(4, 0, 4, 0)
         Label11.Name = "Label11"
         Label11.Size = New Size(52, 17)
         Label11.TabIndex = 51
@@ -581,9 +650,11 @@ Partial Class Form1
         ' 
         ' Label12
         ' 
+        Label12.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label12.AutoSize = True
         Label12.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label12.Location = New Point(289, 535)
+        Label12.Location = New Point(635, 676)
+        Label12.Margin = New Padding(4, 0, 4, 0)
         Label12.Name = "Label12"
         Label12.Size = New Size(42, 17)
         Label12.TabIndex = 52
@@ -592,9 +663,11 @@ Partial Class Form1
         ' 
         ' Label13
         ' 
+        Label13.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label13.AutoSize = True
         Label13.Font = New Font("Segoe UI", 7.8F, FontStyle.Bold, GraphicsUnit.Point, CByte(0))
-        Label13.Location = New Point(310, 661)
+        Label13.Location = New Point(662, 833)
+        Label13.Margin = New Padding(4, 0, 4, 0)
         Label13.Name = "Label13"
         Label13.Size = New Size(113, 17)
         Label13.TabIndex = 53
@@ -603,9 +676,11 @@ Partial Class Form1
         ' 
         ' Label14
         ' 
+        Label14.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label14.AutoSize = True
         Label14.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label14.Location = New Point(175, 595)
+        Label14.Location = New Point(493, 751)
+        Label14.Margin = New Padding(4, 0, 4, 0)
         Label14.Name = "Label14"
         Label14.Size = New Size(90, 17)
         Label14.TabIndex = 54
@@ -614,9 +689,11 @@ Partial Class Form1
         ' 
         ' Label15
         ' 
+        Label15.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label15.AutoSize = True
         Label15.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label15.Location = New Point(13, 593)
+        Label15.Location = New Point(290, 748)
+        Label15.Margin = New Padding(4, 0, 4, 0)
         Label15.Name = "Label15"
         Label15.Size = New Size(58, 17)
         Label15.TabIndex = 55
@@ -625,9 +702,11 @@ Partial Class Form1
         ' 
         ' Label16
         ' 
+        Label16.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label16.AutoSize = True
         Label16.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label16.Location = New Point(12, 659)
+        Label16.Location = New Point(289, 831)
+        Label16.Margin = New Padding(4, 0, 4, 0)
         Label16.Name = "Label16"
         Label16.Size = New Size(93, 17)
         Label16.TabIndex = 56
@@ -636,9 +715,11 @@ Partial Class Form1
         ' 
         ' Label17
         ' 
+        Label17.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label17.AutoSize = True
         Label17.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label17.Location = New Point(549, 598)
+        Label17.Location = New Point(960, 755)
+        Label17.Margin = New Padding(4, 0, 4, 0)
         Label17.Name = "Label17"
         Label17.Size = New Size(58, 17)
         Label17.TabIndex = 57
@@ -647,9 +728,11 @@ Partial Class Form1
         ' 
         ' Label21
         ' 
+        Label21.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         Label21.AutoSize = True
         Label21.Font = New Font("Segoe UI", 7.8F, FontStyle.Regular, GraphicsUnit.Point, CByte(0))
-        Label21.Location = New Point(382, 597)
+        Label21.Location = New Point(752, 753)
+        Label21.Margin = New Padding(4, 0, 4, 0)
         Label21.Name = "Label21"
         Label21.Size = New Size(37, 17)
         Label21.TabIndex = 61
@@ -658,10 +741,12 @@ Partial Class Form1
         ' 
         ' btnExportExcel
         ' 
+        btnExportExcel.Anchor = AnchorStyles.Bottom Or AnchorStyles.Left
         btnExportExcel.BackColor = Color.FromArgb(CByte(128), CByte(255), CByte(128))
-        btnExportExcel.Location = New Point(1032, 528)
+        btnExportExcel.Location = New Point(1564, 667)
+        btnExportExcel.Margin = New Padding(4)
         btnExportExcel.Name = "btnExportExcel"
-        btnExportExcel.Size = New Size(200, 31)
+        btnExportExcel.Size = New Size(250, 39)
         btnExportExcel.TabIndex = 62
         btnExportExcel.Text = "Esporta Excel xlsx"
         btnExportExcel.UseVisualStyleBackColor = False
@@ -669,7 +754,9 @@ Partial Class Form1
         ' 
         ' Form1
         ' 
-        ClientSize = New Size(1501, 760)
+        AutoScaleDimensions = New SizeF(120.0F, 120.0F)
+        AutoScaleMode = AutoScaleMode.Dpi
+        ClientSize = New Size(1876, 980)
         Controls.Add(btnExportExcel)
         Controls.Add(Label21)
         Controls.Add(Label17)
@@ -687,11 +774,10 @@ Partial Class Form1
         Controls.Add(Label5)
         Controls.Add(Label4)
         Controls.Add(Label9)
+        Controls.Add(btnRinnovoTessera)
         Controls.Add(Button1)
         Controls.Add(lblStatus)
         Controls.Add(btnToggleHighlight)
-        Controls.Add(btnRestoreLayout)
-        Controls.Add(btnSaveLayout)
         Controls.Add(btnExportCsv)
         Controls.Add(btnSearch)
         Controls.Add(txtSearch)
@@ -721,7 +807,8 @@ Partial Class Form1
         Controls.Add(txtCognome)
         Controls.Add(txtId)
         Controls.Add(dgvAnagrafico)
-        MinimumSize = New Size(1056, 799)
+        Margin = New Padding(4)
+        MinimumSize = New Size(1316, 987)
         Name = "Form1"
         StartPosition = FormStartPosition.CenterScreen
         Text = "Anagrafica Generale"

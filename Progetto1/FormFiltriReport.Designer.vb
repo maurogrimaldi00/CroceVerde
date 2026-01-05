@@ -29,128 +29,137 @@ Partial Class FormFiltriReport
 
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        Me.Label1 = New System.Windows.Forms.Label()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.cmbZonaFiltro = New System.Windows.Forms.ComboBox()
-        Me.cmbQualificaFiltro = New System.Windows.Forms.ComboBox()
-        Me.chkSoloSoci = New System.Windows.Forms.CheckBox()
-        Me.chkSoloMiliti = New System.Windows.Forms.CheckBox()
-        Me.btnOK = New System.Windows.Forms.Button()
-        Me.btnAnnulla = New System.Windows.Forms.Button()
-        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
-        Me.GroupBox1.SuspendLayout()
-        Me.SuspendLayout()
-        '
-        'Label1
-        '
-        Me.Label1.AutoSize = True
-        Me.Label1.Location = New System.Drawing.Point(20, 25)
-        Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(39, 15)
-        Me.Label1.TabIndex = 0
-        Me.Label1.Text = "Zona:"
-        '
-        'Label2
-        '
-        Me.Label2.AutoSize = True
-        Me.Label2.Location = New System.Drawing.Point(20, 65)
-        Me.Label2.Name = "Label2"
-        Me.Label2.Size = New System.Drawing.Size(61, 15)
-        Me.Label2.TabIndex = 1
-        Me.Label2.Text = "Qualifica:"
-        '
-        'cmbZonaFiltro
-        '
-        Me.cmbZonaFiltro.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbZonaFiltro.FormattingEnabled = True
-        Me.cmbZonaFiltro.Location = New System.Drawing.Point(100, 22)
-        Me.cmbZonaFiltro.Name = "cmbZonaFiltro"
-        Me.cmbZonaFiltro.Size = New System.Drawing.Size(280, 23)
-        Me.cmbZonaFiltro.TabIndex = 2
-        '
-        'cmbQualificaFiltro
-        '
-        Me.cmbQualificaFiltro.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.cmbQualificaFiltro.FormattingEnabled = True
-        Me.cmbQualificaFiltro.Location = New System.Drawing.Point(100, 62)
-        Me.cmbQualificaFiltro.Name = "cmbQualificaFiltro"
-        Me.cmbQualificaFiltro.Size = New System.Drawing.Size(280, 23)
-        Me.cmbQualificaFiltro.TabIndex = 3
-        '
-        'chkSoloSoci
-        '
-        Me.chkSoloSoci.AutoSize = True
-        Me.chkSoloSoci.Location = New System.Drawing.Point(15, 25)
-        Me.chkSoloSoci.Name = "chkSoloSoci"
-        Me.chkSoloSoci.Size = New System.Drawing.Size(76, 19)
-        Me.chkSoloSoci.TabIndex = 4
-        Me.chkSoloSoci.Text = "Solo Soci"
-        Me.chkSoloSoci.UseVisualStyleBackColor = True
-        '
-        'chkSoloMiliti
-        '
-        Me.chkSoloMiliti.AutoSize = True
-        Me.chkSoloMiliti.Location = New System.Drawing.Point(15, 55)
-        Me.chkSoloMiliti.Name = "chkSoloMiliti"
-        Me.chkSoloMiliti.Size = New System.Drawing.Size(85, 19)
-        Me.chkSoloMiliti.TabIndex = 5
-        Me.chkSoloMiliti.Text = "Solo Militi"
-        Me.chkSoloMiliti.UseVisualStyleBackColor = True
-        '
-        'btnOK
-        '
-        Me.btnOK.Location = New System.Drawing.Point(200, 240)
-        Me.btnOK.Name = "btnOK"
-        Me.btnOK.Size = New System.Drawing.Size(90, 30)
-        Me.btnOK.TabIndex = 6
-        Me.btnOK.Text = "OK"
-        Me.btnOK.UseVisualStyleBackColor = True
-        '
-        'btnAnnulla
-        '
-        Me.btnAnnulla.DialogResult = System.Windows.Forms.DialogResult.Cancel
-        Me.btnAnnulla.Location = New System.Drawing.Point(300, 240)
-        Me.btnAnnulla.Name = "btnAnnulla"
-        Me.btnAnnulla.Size = New System.Drawing.Size(90, 30)
-        Me.btnAnnulla.TabIndex = 7
-        Me.btnAnnulla.Text = "Annulla"
-        Me.btnAnnulla.UseVisualStyleBackColor = True
-        '
-        'GroupBox1
-        '
-        Me.GroupBox1.Controls.Add(Me.chkSoloSoci)
-        Me.GroupBox1.Controls.Add(Me.chkSoloMiliti)
-        Me.GroupBox1.Location = New System.Drawing.Point(20, 105)
-        Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(360, 90)
-        Me.GroupBox1.TabIndex = 8
-        Me.GroupBox1.TabStop = False
-        Me.GroupBox1.Text = "Filtri aggiuntivi"
-        '
-        'FormFiltriReport
-        '
-        Me.AcceptButton = Me.btnOK
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(7.0!, 15.0!)
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.CancelButton = Me.btnAnnulla
-        Me.ClientSize = New System.Drawing.Size(404, 285)
-        Me.Controls.Add(Me.GroupBox1)
-        Me.Controls.Add(Me.btnAnnulla)
-        Me.Controls.Add(Me.btnOK)
-        Me.Controls.Add(Me.cmbQualificaFiltro)
-        Me.Controls.Add(Me.cmbZonaFiltro)
-        Me.Controls.Add(Me.Label2)
-        Me.Controls.Add(Me.Label1)
-        Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
-        Me.MaximizeBox = False
-        Me.MinimizeBox = False
-        Me.Name = "FormFiltriReport"
-        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
-        Me.Text = "Filtri Report Anagrafico"
-        Me.GroupBox1.ResumeLayout(False)
-        Me.GroupBox1.PerformLayout()
-        Me.ResumeLayout(False)
-        Me.PerformLayout()
+        Label1 = New Label()
+        Label2 = New Label()
+        cmbZonaFiltro = New ComboBox()
+        cmbQualificaFiltro = New ComboBox()
+        chkSoloSoci = New CheckBox()
+        chkSoloMiliti = New CheckBox()
+        btnOK = New Button()
+        btnAnnulla = New Button()
+        GroupBox1 = New GroupBox()
+        GroupBox1.SuspendLayout()
+        SuspendLayout()
+        ' 
+        ' Label1
+        ' 
+        Label1.AutoSize = True
+        Label1.Location = New Point(23, 33)
+        Label1.Name = "Label1"
+        Label1.Size = New Size(46, 20)
+        Label1.TabIndex = 0
+        Label1.Text = "Zona:"
+        ' 
+        ' Label2
+        ' 
+        Label2.AutoSize = True
+        Label2.Location = New Point(23, 87)
+        Label2.Name = "Label2"
+        Label2.Size = New Size(71, 20)
+        Label2.TabIndex = 1
+        Label2.Text = "Qualifica:"
+        ' 
+        ' cmbZonaFiltro
+        ' 
+        cmbZonaFiltro.DropDownStyle = ComboBoxStyle.DropDownList
+        cmbZonaFiltro.FormattingEnabled = True
+        cmbZonaFiltro.Location = New Point(114, 29)
+        cmbZonaFiltro.Margin = New Padding(3, 4, 3, 4)
+        cmbZonaFiltro.Name = "cmbZonaFiltro"
+        cmbZonaFiltro.Size = New Size(319, 28)
+        cmbZonaFiltro.TabIndex = 2
+        ' 
+        ' cmbQualificaFiltro
+        ' 
+        cmbQualificaFiltro.DropDownStyle = ComboBoxStyle.DropDownList
+        cmbQualificaFiltro.FormattingEnabled = True
+        cmbQualificaFiltro.Location = New Point(114, 83)
+        cmbQualificaFiltro.Margin = New Padding(3, 4, 3, 4)
+        cmbQualificaFiltro.Name = "cmbQualificaFiltro"
+        cmbQualificaFiltro.Size = New Size(319, 28)
+        cmbQualificaFiltro.TabIndex = 3
+        ' 
+        ' chkSoloSoci
+        ' 
+        chkSoloSoci.AutoSize = True
+        chkSoloSoci.Location = New Point(17, 33)
+        chkSoloSoci.Margin = New Padding(3, 4, 3, 4)
+        chkSoloSoci.Name = "chkSoloSoci"
+        chkSoloSoci.Size = New Size(93, 24)
+        chkSoloSoci.TabIndex = 4
+        chkSoloSoci.Text = "Solo Soci"
+        chkSoloSoci.UseVisualStyleBackColor = True
+        ' 
+        ' chkSoloMiliti
+        ' 
+        chkSoloMiliti.AutoSize = True
+        chkSoloMiliti.Location = New Point(17, 73)
+        chkSoloMiliti.Margin = New Padding(3, 4, 3, 4)
+        chkSoloMiliti.Name = "chkSoloMiliti"
+        chkSoloMiliti.Size = New Size(99, 24)
+        chkSoloMiliti.TabIndex = 5
+        chkSoloMiliti.Text = "Solo Militi"
+        chkSoloMiliti.UseVisualStyleBackColor = True
+        ' 
+        ' btnOK
+        ' 
+        btnOK.Location = New Point(229, 320)
+        btnOK.Margin = New Padding(3, 4, 3, 4)
+        btnOK.Name = "btnOK"
+        btnOK.Size = New Size(103, 40)
+        btnOK.TabIndex = 6
+        btnOK.Text = "OK"
+        btnOK.UseVisualStyleBackColor = True
+        ' 
+        ' btnAnnulla
+        ' 
+        btnAnnulla.DialogResult = DialogResult.Cancel
+        btnAnnulla.Location = New Point(343, 320)
+        btnAnnulla.Margin = New Padding(3, 4, 3, 4)
+        btnAnnulla.Name = "btnAnnulla"
+        btnAnnulla.Size = New Size(103, 40)
+        btnAnnulla.TabIndex = 7
+        btnAnnulla.Text = "Annulla"
+        btnAnnulla.UseVisualStyleBackColor = True
+        ' 
+        ' GroupBox1
+        ' 
+        GroupBox1.Controls.Add(chkSoloSoci)
+        GroupBox1.Controls.Add(chkSoloMiliti)
+        GroupBox1.Location = New Point(23, 140)
+        GroupBox1.Margin = New Padding(3, 4, 3, 4)
+        GroupBox1.Name = "GroupBox1"
+        GroupBox1.Padding = New Padding(3, 4, 3, 4)
+        GroupBox1.Size = New Size(411, 120)
+        GroupBox1.TabIndex = 8
+        GroupBox1.TabStop = False
+        GroupBox1.Text = "Filtri aggiuntivi"
+        ' 
+        ' FormFiltriReport
+        ' 
+        AcceptButton = btnOK
+        AutoScaleDimensions = New SizeF(8.0F, 20.0F)
+        AutoScaleMode = AutoScaleMode.Font
+        CancelButton = btnAnnulla
+        ClientSize = New Size(462, 380)
+        Controls.Add(GroupBox1)
+        Controls.Add(btnAnnulla)
+        Controls.Add(btnOK)
+        Controls.Add(cmbQualificaFiltro)
+        Controls.Add(cmbZonaFiltro)
+        Controls.Add(Label2)
+        Controls.Add(Label1)
+        FormBorderStyle = FormBorderStyle.FixedDialog
+        Margin = New Padding(3, 4, 3, 4)
+        MaximizeBox = False
+        MinimizeBox = False
+        Name = "FormFiltriReport"
+        StartPosition = FormStartPosition.CenterParent
+        Text = "Filtri Report Anagrafico"
+        GroupBox1.ResumeLayout(False)
+        GroupBox1.PerformLayout()
+        ResumeLayout(False)
+        PerformLayout()
 
     End Sub
 End Class

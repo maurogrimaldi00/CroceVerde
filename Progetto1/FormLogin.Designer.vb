@@ -32,7 +32,7 @@ Partial Class FormLogin
         Me.lblTitle.Name = "lblTitle"
         Me.lblTitle.Size = New System.Drawing.Size(240, 30)
         Me.lblTitle.TabIndex = 0
-        Me.lblTitle.Text = "GESTIONALE CROCE VERDE"
+        Me.lblTitle.Text = "GESTIONE CROCE VERDE"
         '
         'lblUsername
         '

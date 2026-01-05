@@ -10,26 +10,29 @@ Public Class FormMain
     Private sidebar As Panel
     Private contentPanel As Panel
     Private activeForm As Form
+    Private isSidebarVisible As Boolean = True
+    Private btnToggleSidebar As Button
 
     Public Sub New()
 
         MyBase.New()
-            Try
-                ' Debug
-                System.Diagnostics.Debug.WriteLine("FormMain.New() - Inizio")
+        Try
+            ' Debug
+            System.Diagnostics.Debug.WriteLine("FormMain.New() - Inizio")
 
-                ' Inizializza il form base
-                Me.Text = "Gestionale Croce Verde"
-                Me.Size = New Size(1280, 720)
-                Me.StartPosition = FormStartPosition.CenterScreen
+            ' Inizializza il form base
+            Me.Text = "Gestione Croce Verde"
+            Me.Size = New Size(1280, 720)
+            Me.MinimumSize = New Size(1024, 600)
+            Me.StartPosition = FormStartPosition.CenterScreen
 
-                ' Carica la connessione
-                connectionString = ReadConnectionString()
+            ' Carica la connessione
+            connectionString = ReadConnectionString()
 
-                System.Diagnostics.Debug.WriteLine("FormMain.New() - Fine")
-            Catch ex As Exception
-                MessageBox.Show($"Errore in FormMain.New(): {ex.Message}{vbCrLf}{ex.StackTrace}",
-                          "Errore Costruttore", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            System.Diagnostics.Debug.WriteLine("FormMain.New() - Fine")
+        Catch ex As Exception
+            MessageBox.Show($"Errore in FormMain.New(): {ex.Message}{vbCrLf}{ex.StackTrace}",
+                      "Errore Costruttore", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Throw
         End Try
     End Sub
@@ -46,7 +49,7 @@ Public Class FormMain
             End If
 
             Me.WindowState = FormWindowState.Maximized
-            Me.Text = $"Gestionale Croce Verde - {UserSession.Current.Nome} {UserSession.Current.Cognome} ({UserSession.Current.Ruolo})"
+            Me.Text = $"Gestione Croce Verde - {UserSession.Current.Nome} {UserSession.Current.Cognome} ({UserSession.Current.Ruolo})"
 
             System.Diagnostics.Debug.WriteLine("FormMain_Load - Inizializzazione sidebar")
             InitializeSidebar()
@@ -54,8 +57,14 @@ Public Class FormMain
             System.Diagnostics.Debug.WriteLine("FormMain_Load - Inizializzazione content panel")
             InitializeContentPanel()
 
+            System.Diagnostics.Debug.WriteLine("FormMain_Load - Inizializzazione toggle button")
+            InitializeToggleButton()
+
             System.Diagnostics.Debug.WriteLine("FormMain_Load - Show welcome screen")
             ShowWelcomeScreen()
+
+            ' Nascondi la sidebar all'avvio (opzionale)
+            ToggleSidebar()
 
             System.Diagnostics.Debug.WriteLine("FormMain_Load - Fine")
         Catch ex As Exception
@@ -81,7 +90,7 @@ Public Class FormMain
             }
 
             Dim lblAppName As New Label() With {
-                .Text = "GESTIONALE",
+                .Text = "Menu Generale",
                 .Font = New Font("Segoe UI", 14, FontStyle.Bold),
                 .ForeColor = Color.White,
                 .Dock = DockStyle.Fill,
@@ -108,59 +117,40 @@ Public Class FormMain
             sidebar.Controls.Add(userPanel)
             userPanel.BringToFront()
 
-            ' Menu Items
-            Dim menuContainer As New Panel() With {
+            ' Menu Items con FlowLayoutPanel (layout adattivo)
+            Dim menuFlow As New FlowLayoutPanel() With {
                 .Dock = DockStyle.Fill,
-                .AutoScroll = True
+                .FlowDirection = FlowDirection.TopDown,
+                .AutoScroll = True,
+                .WrapContents = False,
+                .Padding = New Padding(10, 130, 10, 10) '130 aumenta padding top per distanziare dal userPanel
             }
-            sidebar.Controls.Add(menuContainer)
-
-            Dim yPos As Integer = 10
+            sidebar.Controls.Add(menuFlow)
 
             ' ANAGRAFICA
-            AddMenuCategory(menuContainer, "ANAGRAFICA", yPos)
-            yPos += 35
-            AddMenuItem(menuContainer, "👥 Anagrafico Soci", yPos, AddressOf MenuAnagrafico_Click)
-            yPos += 45
-            AddMenuItem(menuContainer, "🗺️ Gestione Zone", yPos, AddressOf MenuZone_Click)
-            yPos += 45
-            AddMenuItem(menuContainer, "🎓 Gestione Qualifiche", yPos, AddressOf MenuQualifiche_Click)
-            yPos += 45
-
-            AddSeparator(menuContainer, yPos)
-            yPos += 15
+            AddMenuCategory(menuFlow, "GESTIONE")
+            AddMenuItem(menuFlow, "👥 Anagrafico Soci", AddressOf MenuAnagrafico_Click)
+            AddMenuItem(menuFlow, "🗺️ Gestione Zone", AddressOf MenuZone_Click)
+            AddMenuItem(menuFlow, "🎓 Gestione Qualifiche", AddressOf MenuQualifiche_Click)
+            AddSeparator(menuFlow)
 
             ' GESTIONE
-            AddMenuCategory(menuContainer, "GESTIONE", yPos)
-            yPos += 35
-            AddMenuItem(menuContainer, "🎫 Tessere", yPos, AddressOf MenuTessere_Click)
-            yPos += 45
-            AddMenuItem(menuContainer, "🏥 Assicurazioni", yPos, AddressOf MenuAssicurazioni_Click)
-            yPos += 45
-
-            AddSeparator(menuContainer, yPos)
-            yPos += 15
+            AddMenuCategory(menuFlow, "GESTIONE")
+            AddMenuItem(menuFlow, "🎫 Tessere", AddressOf MenuTessere_Click)
+            AddMenuItem(menuFlow, "🏥 Assicurazioni", AddressOf MenuAssicurazioni_Click)
+            AddSeparator(menuFlow)
 
             ' REPORT
-            AddMenuCategory(menuContainer, "REPORT", yPos)
-            yPos += 35
-            AddMenuItem(menuContainer, "📊 Stampe e Report", yPos, AddressOf MenuReport_Click)
-            yPos += 45
-
-            AddSeparator(menuContainer, yPos)
-            yPos += 15
+            AddMenuCategory(menuFlow, "REPORT")
+            AddMenuItem(menuFlow, "📊 Stampe e Report", AddressOf MenuReport_Click)
+            AddSeparator(menuFlow)
 
             ' AMMINISTRAZIONE (solo admin)
             If UserSession.IsAdmin() Then
-                AddMenuCategory(menuContainer, "AMMINISTRAZIONE", yPos)
-                yPos += 35
-                AddMenuItem(menuContainer, "👤 Gestione Utenti", yPos, AddressOf MenuUtenti_Click)
-                yPos += 45
-                AddMenuItem(menuContainer, "⚙️ Impostazioni DB", yPos, AddressOf MenuImpostazioni_Click)
-                yPos += 45
-
-                AddSeparator(menuContainer, yPos)
-                yPos += 15
+                AddMenuCategory(menuFlow, "AMMINISTRAZIONE")
+                AddMenuItem(menuFlow, "👤 Gestione Utenti", AddressOf MenuUtenti_Click)
+                AddMenuItem(menuFlow, "⚙️ Impostazioni DB", AddressOf MenuImpostazioni_Click)
+                AddSeparator(menuFlow)
             End If
 
             ' LOGOUT (sempre in fondo)
@@ -172,13 +162,12 @@ Public Class FormMain
                 .FlatStyle = FlatStyle.Flat,
                 .Width = 200,
                 .Height = 40,
-                .Left = 10,
-                .Top = yPos,
+                .Margin = New Padding(0, 10, 0, 0),
                 .Cursor = Cursors.Hand
             }
             btnLogout.FlatAppearance.BorderSize = 0
             AddHandler btnLogout.Click, AddressOf btnLogout_Click
-            menuContainer.Controls.Add(btnLogout)
+            menuFlow.Controls.Add(btnLogout)
 
         Catch ex As Exception
             MessageBox.Show($"Errore InitializeSidebar: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
@@ -186,20 +175,61 @@ Public Class FormMain
         End Try
     End Sub
 
-    Private Sub AddMenuCategory(parent As Panel, text As String, top As Integer)
+    Private Sub InitializeToggleButton()
+        ' Crea il pulsante hamburger per toggle della sidebar
+        btnToggleSidebar = New Button() With {
+            .Text = "☰",
+            .Font = New Font("Segoe UI", 20, FontStyle.Bold),
+            .Size = New Size(50, 50),
+            .Location = New Point(10, 10),
+            .BackColor = Color.FromArgb(0, 122, 204),
+            .ForeColor = Color.White,
+            .FlatStyle = FlatStyle.Flat,
+            .Cursor = Cursors.Hand,
+            .TabStop = False
+        }
+        btnToggleSidebar.FlatAppearance.BorderSize = 0
+        btnToggleSidebar.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 100, 180)
+
+        AddHandler btnToggleSidebar.Click, AddressOf btnToggleSidebar_Click
+
+        ' Aggiungi il pulsante sopra tutti gli altri controlli
+        Me.Controls.Add(btnToggleSidebar)
+        btnToggleSidebar.BringToFront()
+    End Sub
+
+    Private Sub btnToggleSidebar_Click(sender As Object, e As EventArgs)
+        ToggleSidebar()
+    End Sub
+
+
+
+    Private Sub ToggleSidebar()
+        isSidebarVisible = Not isSidebarVisible
+        sidebar.Visible = isSidebarVisible
+
+        ' Aggiorna posizione pulsante
+        If isSidebarVisible Then
+            btnToggleSidebar.Location = New Point(sidebar.Width + 10, 10)
+        Else
+            btnToggleSidebar.Location = New Point(10, 10)
+        End If
+    End Sub
+
+    Private Sub AddMenuCategory(parent As FlowLayoutPanel, text As String)
         Dim lbl As New Label() With {
             .Text = text,
             .Font = New Font("Segoe UI", 9, FontStyle.Bold),
             .ForeColor = Color.Gray,
-            .Top = top,
-            .Left = 15,
-            .Width = 190,
-            .Height = 25
+            .Width = 200,
+            .Height = 25,  '25
+            .Margin = New Padding(0, 5, 0, 5),
+            .Padding = New Padding(5, 0, 0, 0)
         }
         parent.Controls.Add(lbl)
     End Sub
 
-    Private Sub AddMenuItem(parent As Panel, text As String, top As Integer, handler As EventHandler)
+    Private Sub AddMenuItem(parent As FlowLayoutPanel, text As String, handler As EventHandler)
         Dim btn As New Button() With {
             .Text = text,
             .Font = New Font("Segoe UI", 10),
@@ -209,8 +239,7 @@ Public Class FormMain
             .TextAlign = ContentAlignment.MiddleLeft,
             .Width = 200,
             .Height = 40,
-            .Left = 10,
-            .Top = top,
+            .Margin = New Padding(0, 2, 0, 2),
             .Cursor = Cursors.Hand
         }
 
@@ -222,12 +251,11 @@ Public Class FormMain
         parent.Controls.Add(btn)
     End Sub
 
-    Private Sub AddSeparator(parent As Panel, top As Integer)
+    Private Sub AddSeparator(parent As FlowLayoutPanel)
         Dim sep As New Panel() With {
             .Height = 1,
             .Width = 200,
-            .Left = 10,
-            .Top = top,
+            .Margin = New Padding(0, 8, 0, 8),
             .BackColor = Color.FromArgb(62, 62, 64)
         }
         parent.Controls.Add(sep)
@@ -272,7 +300,8 @@ Public Class FormMain
         Try
             Dim welcomeLabel As New Label() With {
                 .Text = $"Benvenuto, {UserSession.Current.Nome}!" & vbCrLf & vbCrLf &
-                       "Seleziona una voce dal menu per iniziare.",
+                       "Seleziona una voce dal menu per iniziare." & vbCrLf &
+                       "Usa il pulsante ☰ per aprire/chiudere il menu.",
                 .Font = New Font("Segoe UI", 16),
                 .TextAlign = ContentAlignment.MiddleCenter,
                 .Dock = DockStyle.Fill,
@@ -312,8 +341,10 @@ Public Class FormMain
 
     Private Sub MenuReport_Click(sender As Object, e As EventArgs)
         Try
-            Dim frm As New Form1()
-            ShowFormInPanel(frm)
+            ' ✅ MODIFICATO: Apri FormFiltriReport invece di Form1
+            Using frmFiltri As New FormFiltriReport(connectionString)
+                frmFiltri.ShowDialog()
+            End Using
         Catch ex As Exception
             MessageBox.Show($"Errore apertura Report: {ex.Message}", "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try

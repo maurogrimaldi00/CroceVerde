@@ -12,6 +12,11 @@ Module Program
 
             Log("=== AVVIO APPLICAZIONE ===")
 
+            ' CRITICO: Imposta il DPI Awareness PRIMA di EnableVisualStyles
+            Application.SetHighDpiMode(HighDpiMode.PerMonitorV2)
+            Log("HighDpiMode impostato su PerMonitorV2")
+
+            ' Configurazione applicazione
             Application.EnableVisualStyles()
             Application.SetCompatibleTextRenderingDefault(False)
 
@@ -50,7 +55,8 @@ Module Program
             Log("=== FINE APPLICAZIONE ===")
 
             ' Mostra log alla fine
-            MessageBox.Show($"Log salvato in:{vbCrLf}{logFile}", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            'Commento riga sotto per evitare msgbox di log al logout
+            'MessageBox.Show($"Log salvato in:{vbCrLf}{logFile}", "Debug", MessageBoxButtons.OK, MessageBoxIcon.Information)
 
         Catch ex As Exception
             Log($"ERRORE CRITICO: {ex.Message}{Environment.NewLine}{ex.StackTrace}")
